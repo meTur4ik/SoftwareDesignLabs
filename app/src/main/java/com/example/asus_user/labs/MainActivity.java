@@ -21,7 +21,6 @@ public class MainActivity extends AppCompatActivity {
         catch (SecurityException e){
             throw e;
         }
-        String asd;
         TextView central = (TextView)findViewById(R.id.textView);
         central.setText(imei);
     }

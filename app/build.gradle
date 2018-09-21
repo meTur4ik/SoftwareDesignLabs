@@ -1,14 +1,5 @@
 apply plugin: 'com.android.application'
-apply from: 'https://gist.githubusercontent.com/IlyaEremin/8821fbf0069e8e60dfeaeefc19afaca2/raw/ce54be4ea6f19b9609f303cd75714d6ec8d916e5/app_version.gradle'
-
-
-ext.versionMajor = 1
-ext.versionMinor = 0
-ext.versionPatch = 0
-ext.versionClassifier = null
-ext.isSnapshot = true
-ext.minimumSdkVersion = 19
-
+apply from: 'versioning.gradle'
 
 android {
     compileSdkVersion 26
@@ -16,8 +7,8 @@ android {
         applicationId "com.example.asus_user.labs"
         minSdkVersion 23
         targetSdkVersion 26
-        versionCode generateVersionCode()
-        versionName generateVersionName()
+        versionCode buildVersionCode()
+        versionName version
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -35,20 +26,4 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-}
-
-private Integer generateVersionCode() {
-    return ext.minimumSdkVersion * 10000000 + ext.versionMajor * 10000 + ext.versionMinor * 100 + ext.versionPatch
-}
-
-private String generateVersionName() {
-    String versionName = "${ext.versionMajor}.${ext.versionMinor}.${ext.versionPatch}"
-    if (ext.versionClassifier == null && ext.isSnapshot) {
-        ext.versionClassifier = "SNAPSHOT"
-    }
-
-    if (ext.versionClassifier != null) {
-        versionName += "-" + ext.versionClassifier
-    }
-    return versionName;
 }
