@@ -29,8 +29,6 @@ public class MainActivity extends AppCompatActivity {
         catch (SecurityException e){
             throw e;
         }
-//        TextView central = (TextView)findViewById(R.id.textView);
-//        central.setText(imei);
 
         try {
             PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);

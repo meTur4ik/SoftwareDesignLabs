@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 apply from: 'https://gist.githubusercontent.com/IlyaEremin/8821fbf0069e8e60dfeaeefc19afaca2/raw/ce54be4ea6f19b9609f303cd75714d6ec8d916e5/app_version.gradle'
-//apply plugin: 'nebula'
+//apply plugin: 'nebula.release'
 
 android {
 
@@ -8,33 +8,36 @@ android {
     def versionPropsFile = file('version.properties')
 
     if (versionPropsFile.canRead()) {
-//        def Properties versionProps = new Properties()
-//
-//        versionProps.load(new FileInputStream(versionPropsFile))
-//
-//        def code = versionProps['VERSION_CODE'].toInteger() + 1
-//        def major = versionProps['VERSION_MAJOR'].toString()
-//        def minor = versionProps['VERSION_MINOR'].toString()
-//        def annotation = versionProps['VERSION_ANNOTATION'].toString()
-//
-//        versionProps['VERSION_CODE']=code.toString()
-//        versionProps.store(versionPropsFile.newWriter(), null)
+        def Properties versionProps = new Properties()
+
+        versionProps.load(new FileInputStream(versionPropsFile))
+
+        def code = versionProps['VERSION_CODE'].toInteger() + 1
+        def major = versionProps['VERSION_MAJOR'].toString()
+        def minor = versionProps['VERSION_MINOR'].toString()
+        def annotation = versionProps['VERSION_ANNOTATION'].toString()
+
+        versionProps['VERSION_CODE']=code.toString()
+        versionProps.store(versionPropsFile.newWriter(), null)
 
         defaultConfig {
             applicationId "com.example.asus_user.labs"
 
-            versionCode 1
-            versionName "1.0"
+            versionCode code
+            versionName major + '.' + minor + '.' + code.toString() + annotation
             minSdkVersion 23
             targetSdkVersion 26
             testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+            project.ext.set("archivesBaseName", "Labs-" + defaultConfig.versionName)
+            project.ext.set("version", defaultConfig.versionName)
         }
     }
     else {
         throw new GradleException("Could not read version.properties!")
     }
+
     buildTypes {
-        release {
+        rc {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             applicationIdSuffix ".release"
@@ -47,7 +50,12 @@ android {
 
     flavorDimensions "version"
     productFlavors{
-
+        deploy {
+            applicationIdSuffix ".deploy"
+        }
+        dev {
+            applicationIdSuffix ".dev"
+        }
     }
 }
 
@@ -58,6 +66,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-
+    implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '2.2.0.201212191850-r'
 }
 
