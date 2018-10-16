@@ -72,7 +72,6 @@ android {
         deploy {
             applicationIdSuffix ".deploy"
             versionNameSuffix "-deploy"
-            buildConfigField('Boolean', 'Deploy', 'true')
         }
         dev {
             applicationIdSuffix ".dev"
@@ -129,4 +128,5 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '2.2.0.201212191850-r'
+    implementation 'com.android.support:design:26.1.0'
 }
