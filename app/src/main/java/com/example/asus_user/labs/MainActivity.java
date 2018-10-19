@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
             showPhoneState();
         }
     }
-
+//
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String permissions[],

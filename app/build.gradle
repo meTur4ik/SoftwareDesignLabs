@@ -3,15 +3,10 @@ apply plugin: 'com.android.application'
 //apply plugin: 'nebula.release'
 
 android {
-    boolean minorRaised = false
-    applicationVariants.all { com.android.build.gradle.api.ApplicationVariant variant ->
-        def type = variant.flavorName + variant.buildType.name
-        if(type == 'deployrelease' && !minorRaised)
-            minorRaised = growMinor(minorRaised)
-    }
-
     compileSdkVersion 26
     def versionPropsFile = file('version.properties')
+
+    def versionString = 'git describe'.execute().text.trim()
 
     if (versionPropsFile.canRead()) {
         def Properties versionProps = new Properties()
@@ -19,18 +14,14 @@ android {
         versionProps.load(new FileInputStream(versionPropsFile))
 
         def code = versionProps['VERSION_CODE'].toInteger() + 1
-        def major = versionProps['VERSION_MAJOR'].toString()
-        def minor = versionProps['VERSION_MINOR'].toString()
         versionProps['VERSION_CODE']=code.toString()
 
         versionProps.store(versionPropsFile.newWriter(), null)
 
-
-
         defaultConfig {
             applicationId "com.example.asus_user.labs"
             versionCode code
-            versionName major + '.' + minor + '.' + code.toString()
+            versionName versionString + '.' + code.toString()
             minSdkVersion 23
             targetSdkVersion 26
             testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -80,53 +71,15 @@ android {
     }
 }
 
-private boolean growMinor(boolean minorRaised) {
-
-    def versionPropsFile = file('version.properties')
-    print android.defaultConfig.versionNameSuffix
-    if (versionPropsFile.canRead()) {
-        def Properties versionProps = new Properties()
-
-        versionProps.load(new FileInputStream(versionPropsFile))
-
-        def minor = versionProps['VERSION_MINOR'].toInteger() + 1
-        def code = versionProps['VERSION_CODE'].toInteger()
-        def major = versionProps['VERSION_MAJOR'].toString()
-        android.defaultConfig.versionName major + '.' + minor + '.' + code.toString()
-        versionProps['VERSION_MINOR'] = minor.toString()
-        //versionProps['VERSION_CODE'] = '0'
-        versionProps.store(versionPropsFile.newWriter(), null)
-        minorRaised = true
-    }
-    return minorRaised
-}
-
-task makeTag(type: Exec) {
-    def versionPropsFile = file('version.properties')
-    if (versionPropsFile.canRead()) {
-        Properties versionProps = new Properties()
-
-        versionProps.load(new FileInputStream(versionPropsFile))
-
-        def major = versionProps['VERSION_MAJOR'].toString()
-        def minor = versionProps['VERSION_MINOR'].toString()
-        def code = versionProps['VERSION_CODE'].toString()
-
-        commandLine 'git', 'tag', 'v' + major + '.' + minor + '.' + code
-
-    }
-    else {
-        throw new GradleException("Could not read version.properties!")
-    }
-}
-
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:26.1.0'
+    //implementation 'com.android.support:appcompat-v7:28.1.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '2.2.0.201212191850-r'
+    //implementation 'com.android.support:design:28.1.0'
     implementation 'com.android.support:design:26.1.0'
 }
