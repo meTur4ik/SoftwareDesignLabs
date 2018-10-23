@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.asus_user.labs">
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <!--xmlns:tools="http://schemas.android.com/tools"
+    tools:replace="android:appComponentFactory" -->
 
     <application
         android:allowBackup="true"

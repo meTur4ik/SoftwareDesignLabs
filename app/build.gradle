@@ -1,12 +1,13 @@
 apply plugin: 'com.android.application'
-//apply from: 'https://gist.githubusercontent.com/IlyaEremin/8821fbf0069e8e60dfeaeefc19afaca2/raw/ce54be4ea6f19b9609f303cd75714d6ec8d916e5/app_version.gradle'
-//apply plugin: 'nebula.release'
 
 android {
-    compileSdkVersion 26
+    dataBinding {
+        enabled = true
+    }
+    compileSdkVersion 28
     def versionPropsFile = file('version.properties')
 
-    def versionString = 'git describe'.execute().text.trim()
+    def versionString = 'git describe'.execute().text.trim().split('-')
 
     if (versionPropsFile.canRead()) {
         def Properties versionProps = new Properties()
@@ -20,16 +21,16 @@ android {
 
         defaultConfig {
             applicationId "com.example.asus_user.labs"
-            versionCode code
-            versionName versionString + '.' + code.toString()
+            versionCode code // max 2100000000
+            versionName versionString[0] + '.' + versionString[1]
             minSdkVersion 23
-            targetSdkVersion 26
+            targetSdkVersion 28
             testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         }
 
         applicationVariants.all { variant ->
             variant.outputs.all {
-                outputFileName = "com.example.labs-v${variant.versionName}.apk"
+                outputFileName = "${applicationId}-${variant.versionName}.apk"
             }
         }
     }
@@ -61,25 +62,48 @@ android {
     flavorDimensions "version"
     productFlavors{
         deploy {
-            applicationIdSuffix ".deploy"
             versionNameSuffix "-deploy"
         }
         dev {
-            applicationIdSuffix ".dev"
             versionNameSuffix "-dev"
         }
     }
 }
 
 dependencies {
+    def archLifecycleVersion = "1.1.1"
+    def navigationVersion = "1.0.0-alpha01"
+//    implementation fileTree(include: ['*.jar'], dir: 'libs')
+//    implementation 'androidx.appcompat:appcompat:1.0.0'
+//    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+//
+//    testImplementation 'junit:junit:4.12'
+//    //androidTestImplementation 'androidx.test:runner:1.1.0'
+//    implementation group: 'androidx.test', name: 'runner', version: '1.1.0-alpha3'
+//    compile group: 'androidx.test.espresso', name: 'espresso-core', version: '3.1.0-alpha1'
+//
+//    implementation 'com.google.android.material:material:1.0.0'
+//    implementation 'androidx.cardview:cardview:1.0.0'
+
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:appcompat-v7:26.1.0'
-    //implementation 'com.android.support:appcompat-v7:28.1.0'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    //implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation "androidx.legacy:legacy-support-core-utils:1.0.0"
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha2'
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '2.2.0.201212191850-r'
-    //implementation 'com.android.support:design:28.1.0'
-    implementation 'com.android.support:design:26.1.0'
+    androidTestImplementation 'androidx.test:runner:1.1.0-beta02'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-beta02'
+    implementation 'com.google.android.material:material:1.0.0'
+    //implementation 'com.android.support:design:26.1.0'
+    //implementation 'com.google.android.material:material:1.0.0'
+
+
+    // LiveData + ViewModel
+
+    implementation "android.arch.lifecycle:extensions:$archLifecycleVersion"
+
+    // Navigation
+
+    implementation 'android.arch.navigation:navigation-fragment:1.0.0-alpha01'
+    implementation 'android.arch.navigation:navigation-ui:1.0.0-alpha01'
 }

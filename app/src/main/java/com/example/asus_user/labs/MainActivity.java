@@ -1,30 +1,36 @@
 package com.example.asus_user.labs;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
-import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.PermissionChecker;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.renderscript.ScriptGroup;
 import android.telephony.TelephonyManager;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.DataBindingUtil;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.navigation.*;
+
 
 public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_CODE = 228;
+    private DrawerLayout drawerLayout;
+    //private NavController controller = new NavController(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,41 +38,39 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         if(!hasPermissions()){
-            requestPermissionWithRationale();
+            requestPermissions();
         } else {
             showPhoneState();
         }
+        //ActivityM = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        //drawerLayout = Binding.
+        //NavController navController = Navigation.findNavController(this, R.layout.)
     }
-//
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String permissions[],
                                            @NonNull int[] grantResults) {
-        boolean allowed = true;
+        Map<String, Boolean> allowed = new HashMap<String, Boolean>();
         switch (requestCode) {
             case PERMISSION_REQUEST_CODE: {
-                for (int res : grantResults) {
-                    allowed = (res == PackageManager.PERMISSION_GRANTED);
+                for (int i = 0, len = grantResults.length; i < len; ++i) {
+                    allowed.put(permissions[i] ,(grantResults[i] == PackageManager.PERMISSION_GRANTED));
                 }
                 break;
             }
-            default: {
-                allowed = false;
-                break;
-            }
         }
-        if (allowed){
+        if (allowed.get(Manifest.permission.READ_PHONE_STATE)){
             showPhoneState();
         }
         else {
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-                if (shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE)){
-                    Toast.makeText(this, "Phone State permission deined",
-                            Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    showNoPhoneStatePermissionSnackbar();
-                }
+            if (shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE)){
+                requestPermissions();
+                Toast.makeText(this, "Phone State permission is needed to show IMEI",
+                        Toast.LENGTH_SHORT).show();
+            }
+            else {
+                showNoPhoneStatePermissionSnackbar();
             }
         }
     }
@@ -87,9 +91,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestPermissions(){
         String[] permissions = new String[] {Manifest.permission.READ_PHONE_STATE};
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            requestPermissions(permissions, PERMISSION_REQUEST_CODE);
-        }
+        requestPermissions(permissions, PERMISSION_REQUEST_CODE);
     }
 
     private void showPhoneState(){
@@ -106,13 +108,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         TextView upper = findViewById(R.id.textView2);
-        try {
-            PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-            String version = pInfo.versionName;
-            upper.setText(version);
-        } catch (PackageManager.NameNotFoundException e) {
-            upper.setText(e.getMessage());
-        }
+        String version = BuildConfig.VERSION_NAME;
+        upper.setText(version);
     }
 
     private void showNoPhoneStatePermissionSnackbar(){
@@ -135,22 +132,5 @@ public class MainActivity extends AppCompatActivity {
         Intent appSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                 Uri.parse("package:" + getPackageName()));
         startActivityForResult(appSettingsIntent, PERMISSION_REQUEST_CODE);
-    }
-    public  void requestPermissionWithRationale(){
-        if (shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE)){
-            final String message = "Calls permission is needed to show IMEI";
-            Snackbar.make(MainActivity.this.findViewById(R.id.activity_view), message,
-                    Snackbar.LENGTH_LONG)
-                    .setAction("GRANT", new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            requestPermissions();
-                        }
-                    })
-                    .show();
-        }
-        else {
-            requestPermissions();
-        }
     }
 }

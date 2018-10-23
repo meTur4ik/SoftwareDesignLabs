@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Labs</string>
+    <string name="text_view1">TextView1</string>
+    <string name="text_view2">TextView2</string>
+    <string name="gallery">Gallery</string>
+    <string name="import_data">Import</string>
+    <string name="slideshow">Slideshow</string>
+    <string name="tools">Tools</string>
 </resources>
