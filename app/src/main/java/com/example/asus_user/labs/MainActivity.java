@@ -37,11 +37,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if(!hasPermissions()){
+        /*if(!hasPermissions()){
             requestPermissions();
         } else {
             showPhoneState();
-        }
+        }*/
         //ActivityM = DataBindingUtil.setContentView(this, R.layout.activity_main);
         //drawerLayout = Binding.
         //NavController navController = Navigation.findNavController(this, R.layout.)

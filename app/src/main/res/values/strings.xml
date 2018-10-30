@@ -6,4 +6,7 @@
     <string name="import_data">Import</string>
     <string name="slideshow">Slideshow</string>
     <string name="tools">Tools</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
