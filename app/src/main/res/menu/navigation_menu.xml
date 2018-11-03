@@ -1,17 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <group android:checkableBehavior="single">
+    <group android:id="@+id/primary">
         <item
-            android:id="@+id/nav_camera"
-            android:title="@string/import_data" />
+            android:id="@+id/homeFragment"
+            android:title="@string/home" />
         <item
-            android:id="@+id/nav_gallery"
-            android:title="@string/gallery" />
+            android:id="@+id/phoneState"
+            android:title="@string/phone_stats" />
         <item
-            android:id="@+id/nav_slideshow"
-            android:title="@string/slideshow" />
-        <item
-            android:id="@+id/nav_manage"
-            android:title="@string/tools" />
+            android:id="@+id/userProfile"
+            android:title="@string/user_profile" />
     </group>
 </menu>

@@ -25,11 +25,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.*;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
 
 
 public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_CODE = 228;
     private DrawerLayout drawerLayout;
+    private NavController navController;
     //private NavController controller = new NavController(this);
 
     @Override
@@ -37,11 +40,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /*if(!hasPermissions()){
+        initializeNavigation();
+        if(!hasPermissions())
             requestPermissions();
-        } else {
-            showPhoneState();
-        }*/
+
         //ActivityM = DataBindingUtil.setContentView(this, R.layout.activity_main);
         //drawerLayout = Binding.
         //NavController navController = Navigation.findNavController(this, R.layout.)
@@ -113,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showNoPhoneStatePermissionSnackbar(){
-        Snackbar.make(MainActivity.this.findViewById(R.id.activity_view),
+        Snackbar.make(MainActivity.this.findViewById(R.id.drawer_layout),
                 "Phone State permission isn't granted", Snackbar.LENGTH_LONG).setAction(
                 "SETTINGS", new View.OnClickListener() {
                     @Override
@@ -132,5 +134,14 @@ public class MainActivity extends AppCompatActivity {
         Intent appSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                 Uri.parse("package:" + getPackageName()));
         startActivityForResult(appSettingsIntent, PERMISSION_REQUEST_CODE);
+    }
+
+    private void initializeNavigation(){
+        NavHostFragment host = (NavHostFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.nav_host_fragment);
+
+        navController = host.getNavController();
+        NavigationView sideNavView = findViewById(R.id.nav_view);
+        NavigationUI.setupWithNavController(sideNavView, navController);
     }
 }

@@ -3,16 +3,32 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/navigation_graph"
-    app:startDestination="@id/userProfile">
+    app:startDestination="@id/homeFragment">
 
     <fragment
         android:id="@+id/userProfile"
         android:name="layout.UserProfile"
         android:label="fragment_user_profile"
-        tools:layout="@layout/fragment_user_profile" />
+        tools:layout="@layout/fragment_user_profile">
+
+        <deepLink app:uri="www.labs.ru/1"/>
+    </fragment>
+
     <fragment
         android:id="@+id/phoneState"
         android:name="layout.PhoneState"
         android:label="fragment_phone_state"
-        tools:layout="@layout/fragment_phone_state" />
+        tools:layout="@layout/fragment_phone_state">
+
+        <deepLink app:uri="www.labs.ru/2"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="layout.HomeFragment"
+        android:label="fragment_home"
+        tools:layout="@layout/fragment_home">
+
+        <deepLink app:uri="www.labs.ru/3"/>
+    </fragment>
 </navigation>
