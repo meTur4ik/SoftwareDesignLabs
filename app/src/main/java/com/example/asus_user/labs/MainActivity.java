@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +32,6 @@ import androidx.navigation.ui.NavigationUI;
 
 public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_CODE = 228;
-    private DrawerLayout drawerLayout;
     private NavController navController;
     //private NavController controller = new NavController(this);
 
@@ -51,10 +51,6 @@ public class MainActivity extends AppCompatActivity {
             requestPermissions();
 
         uriNavigate();
-
-        //ActivityM = DataBindingUtil.setContentView(this, R.layout.activity_main);
-        //drawerLayout = Binding.
-        //NavController navController = Navigation.findNavController(this, R.layout.)
     }
 
     @Override
@@ -72,19 +68,29 @@ public class MainActivity extends AppCompatActivity {
         }
         if (!allowed.get(Manifest.permission.READ_PHONE_STATE)){
             if (shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE)){
-                requestPermissions();
                 Toast.makeText(this, "Phone State permission is needed to show IMEI",
-                        Toast.LENGTH_SHORT).show();
+                        Toast.LENGTH_LONG).show();
+                requestPermissions();
             }
-            else {
-                showNoPhoneStatePermissionSnackbar();
+        }
+
+        if (!allowed.get(Manifest.permission.READ_EXTERNAL_STORAGE) ||
+                !allowed.get(Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+            if (shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE)){
+                Toast.makeText(this, "Read and Write permission is needed to save user data",
+                        Toast.LENGTH_LONG).show();
+                requestPermissions();
             }
         }
     }
 
     private boolean hasPermissions(){
         int result = 0;
-        String[] permissions = new String[] {Manifest.permission.READ_PHONE_STATE};
+        String[] permissions = new String[] {
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+        };
 
         for (String permission : permissions){
             result = checkCallingOrSelfPermission(permission);
@@ -97,48 +103,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void requestPermissions(){
-        String[] permissions = new String[] {Manifest.permission.READ_PHONE_STATE};
+        String[] permissions = new String[] {
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+        };
         requestPermissions(permissions, PERMISSION_REQUEST_CODE);
-    }
-
-    private void showPhoneState(){
-        TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        String imei = "";
-        TextView central = (TextView)findViewById(R.id.textView);
-        try {
-            imei = tm.getDeviceId();
-
-            central.setText(imei);
-        }
-        catch (SecurityException e) {
-            central.setText(e.getMessage());
-        }
-
-        TextView upper = findViewById(R.id.textView2);
-        String version = BuildConfig.VERSION_NAME;
-        upper.setText(version);
-    }
-
-    private void showNoPhoneStatePermissionSnackbar(){
-        Snackbar.make(MainActivity.this.findViewById(R.id.drawer_layout),
-                "Phone State permission isn't granted", Snackbar.LENGTH_LONG).setAction(
-                "SETTINGS", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        openApplicationSettings();
-                        Toast.makeText(getApplicationContext(),
-                                "Open permissions and grant the Calls permission",
-                                Toast.LENGTH_SHORT)
-                                .show();
-                    }
-                })
-                .show();
-    }
-
-    private void openApplicationSettings(){
-        Intent appSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                Uri.parse("package:" + getPackageName()));
-        startActivityForResult(appSettingsIntent, PERMISSION_REQUEST_CODE);
     }
 
     private void initializeNavigation(){
