@@ -40,9 +40,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        NavHostFragment host = (NavHostFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.nav_host_fragment);
+
+        navController = host.getNavController();
+
         initializeNavigation();
+
         if(!hasPermissions())
             requestPermissions();
+
+        uriNavigate();
 
         //ActivityM = DataBindingUtil.setContentView(this, R.layout.activity_main);
         //drawerLayout = Binding.
@@ -62,10 +70,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
         }
-        if (allowed.get(Manifest.permission.READ_PHONE_STATE)){
-            showPhoneState();
-        }
-        else {
+        if (!allowed.get(Manifest.permission.READ_PHONE_STATE)){
             if (shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE)){
                 requestPermissions();
                 Toast.makeText(this, "Phone State permission is needed to show IMEI",
@@ -137,11 +142,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeNavigation(){
-        NavHostFragment host = (NavHostFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.nav_host_fragment);
-
-        navController = host.getNavController();
         NavigationView sideNavView = findViewById(R.id.nav_view);
         NavigationUI.setupWithNavController(sideNavView, navController);
+    }
+
+    private void uriNavigate() {
+        Uri data = getIntent().getData();
+        String text = data == null? null : data.getLastPathSegment();
+
+        //Toast.makeText(this, text == null ? "no index" : text, Toast.LENGTH_LONG).show();
+        int pageNum;
+        try {
+            pageNum = Integer.parseInt(text);
+        }
+        catch (NumberFormatException e) {
+            pageNum = 0;
+        }
+        switch (pageNum) {
+            case 1: {
+                navController.navigate(R.id.homeFragment);
+                break;
+            }
+            case 2: {
+                navController.navigate(R.id.phoneState);
+                break;
+            }
+            case 3: {
+                navController.navigate(R.id.userProfile);
+                break;
+            }
+            default:
+                break;
+        }
+
     }
 }
