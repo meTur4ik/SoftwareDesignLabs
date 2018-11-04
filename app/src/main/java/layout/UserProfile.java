@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.Image;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,7 +24,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 
 import androidx.fragment.app.Fragment;
 
@@ -151,39 +154,75 @@ public class UserProfile extends Fragment {
 
     private void serializeAvatar() {
         ImageView avatar = userProfileView.findViewById(R.id.avatarImageView);
-        BitmapDrawable holder = ((BitmapDrawable) avatar.getDrawable());
-        Bitmap img;
-        if (holder != null){
-            img = holder.getBitmap();
-        } else {
-            return;
-        }
-        OutputStream outputFile = null;
-
-        try {
-            outputFile = new FileOutputStream(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE);
-            img.compress(Bitmap.CompressFormat.JPEG, 100, outputFile);
-        } catch (IOException e) {
-            Toast.makeText(getActivity(), "failed to save avatar",
-                    Toast.LENGTH_LONG).show();
-        } finally {
-            try {
-                if (outputFile != null)
-                    outputFile.close();
-            } catch (IOException e) {
-                Toast.makeText(getActivity(), "failed to save property file",
-                        Toast.LENGTH_LONG).show();
-            }
-        }
+        new ImageSerialyze(avatar).execute();
     }
 
     private void deserializeAvatar() {
         ImageView avatarView = userProfileView.findViewById(R.id.avatarImageView);
-        File avatarFile = new File(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE);
-        if (avatarFile.exists()) {
-            Bitmap avatarBitmap = BitmapFactory.decodeFile(avatarFile.getAbsolutePath());
+        new ImageDeserialyze(avatarView).execute();
+    }
 
-            avatarView.setImageBitmap(avatarBitmap);
+    private static class ImageDeserialyze extends AsyncTask<Void, Void, Bitmap> {
+
+        private final WeakReference<ImageView> imageViewReference;
+
+        public ImageDeserialyze(ImageView imageView){
+            imageViewReference = new WeakReference<ImageView>(imageView);
+        }
+
+        @Override
+        protected Bitmap doInBackground(Void... voids) {
+
+            File avatarFile = new File(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE);
+            Bitmap avatarBitmap = null;
+            if (avatarFile.exists()) {
+                 avatarBitmap = BitmapFactory.decodeFile(avatarFile.getAbsolutePath());
+            }
+            return avatarBitmap;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap avatarBitmap){
+            if (isCancelled()){
+                avatarBitmap = null;
+            }
+            if (imageViewReference != null){
+                ImageView targetImageView = imageViewReference.get();
+                if (targetImageView != null){
+                    targetImageView.setImageBitmap(avatarBitmap);
+                }
+            }
+        }
+    }
+
+    private static class ImageSerialyze extends AsyncTask<Void, Void, Void> {
+
+        private final WeakReference<ImageView> imageViewReference;
+
+        public ImageSerialyze(ImageView imageView){
+            imageViewReference = new WeakReference<ImageView>(imageView);
+        }
+
+        @Override
+        protected Void doInBackground(Void ... voids){
+            ImageView target = imageViewReference.get();
+            BitmapDrawable holder = ((BitmapDrawable) target.getDrawable());
+            Bitmap img;
+            if (holder != null){
+                img = holder.getBitmap();
+            } else {
+                return null;
+            }
+
+            try (FileOutputStream out = new FileOutputStream(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE)) {
+                if (img != null) {
+                    img.compress(Bitmap.CompressFormat.PNG, 100, out);
+                }
+            } catch (IOException e) {
+                Toast.makeText(imageViewReference.get().getContext(), "failed to save avatar",
+                        Toast.LENGTH_LONG).show();
+            }
+            return null;
         }
     }
 }
