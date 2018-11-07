@@ -7,6 +7,9 @@
     <string name="phone_stats">Phone Stats</string>
     <string name="home">Home</string>
     <string name="load_image">Load Image</string>
+    <string name="edit_user_profile">Edit User profile</string>
+    <string name="done">Done</string>
+    <string name="about">About</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/userProfile"
-        android:name="layout.UserProfile"
+        android:name="layout.UserProfileFragment"
         android:label="fragment_user_profile"
         tools:layout="@layout/fragment_user_profile">
 
@@ -15,7 +15,7 @@
 
     <fragment
         android:id="@+id/phoneState"
-        android:name="layout.PhoneState"
+        android:name="layout.PhoneStateFragment"
         android:label="fragment_phone_state"
         tools:layout="@layout/fragment_phone_state">
 
@@ -26,6 +26,22 @@
         android:name="layout.HomeFragment"
         android:label="fragment_home"
         tools:layout="@layout/fragment_home">
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/editUserProfile"
+        android:name="layout.EditUserProfileFragment"
+        android:label="fragment_edit_user"
+        tools:layout="@layout/fragment_edit_user_profile">
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/ololoFragment"
+        android:name="layout.OloloFragment"
+        android:label="fragment_ololo"
+        tools:layout="@layout/fragment_ololo">
 
     </fragment>
 </navigation>

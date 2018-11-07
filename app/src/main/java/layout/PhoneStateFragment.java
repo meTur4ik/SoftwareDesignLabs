@@ -25,7 +25,7 @@ import com.example.asus_user.labs.R;
 import com.google.android.material.snackbar.Snackbar;
 
 
-public class PhoneState extends Fragment {
+public class PhoneStateFragment extends Fragment {
     private static final int PERMISSION_REQUEST_CODE = 228;
     private View phoneStateView;
 

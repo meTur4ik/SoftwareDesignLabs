@@ -10,5 +10,13 @@
         <item
             android:id="@+id/userProfile"
             android:title="@string/user_profile" />
+
+        <!--<item
+            android:id="@+id/editUserProfile"
+            android:title="@string/edit_user_profile" />-->
+
+        <item
+            android:id="@+id/ololoFragment"
+            android:title="ololo" />
     </group>
 </menu>
