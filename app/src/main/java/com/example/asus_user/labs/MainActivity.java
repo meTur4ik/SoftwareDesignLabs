@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,6 +12,7 @@ import android.widget.Toast;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,11 +22,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
-import androidx.navigation.NavDestination;
-import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.NavigationUI;
+import functions.MyNavigationUISetup;
 
 // user, async tasks -> futures, кнопка на тулбаре, label'ы
 //glide images
@@ -36,7 +35,6 @@ public class MainActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener {
     private static final int PERMISSION_REQUEST_CODE = 228;
     private NavController navController;
-    //private NavController controller = new NavController(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,18 +46,6 @@ public class MainActivity extends AppCompatActivity
 
         navController = host.getNavController();
 
-        navController.addOnNavigatedListener(new NavController.OnNavigatedListener() {
-            @Override
-            public void onNavigated(@NonNull NavController controller, @NonNull NavDestination destination) {
-                NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
-                        .findFragmentById(R.id.nav_host_fragment);
-                Fragment current = navHostFragment.getChildFragmentManager().getFragments().get(1);
-                Log.i("changePage", current.getId() + " " + R.id.editUserProfile_Fragment);
-                if (current.getId() == R.id.editUserProfile_Fragment)
-                    Log.i("ololo", Integer.toString(current.getId()));
-            }
-        });
-
         Toolbar toolbar = findViewById(R.id.main_tool_bar);
         setSupportActionBar(toolbar);
 
@@ -69,6 +55,22 @@ public class MainActivity extends AppCompatActivity
             requestPermissions();
 
         uriNavigate();
+    }
+
+    private Fragment getVisibleFragment() {
+        FragmentManager fragmentManager = MainActivity.this.getSupportFragmentManager();
+        List<Fragment> fragments = fragmentManager.getFragments();
+        for (Fragment fragment : fragments) {
+            if (fragment != null && fragment.isVisible())
+                return fragment;
+        }
+        return null;
+    }
+
+    private String getCallerFragment(){
+        FragmentManager fm = getSupportFragmentManager();
+        int count = getSupportFragmentManager().getBackStackEntryCount();
+        return fm.getBackStackEntryAt(count - 1).getName();
     }
 
     @Override
@@ -176,7 +178,8 @@ public class MainActivity extends AppCompatActivity
 
     private void initializeNavigation(){
         NavigationView sideNavView = findViewById(R.id.nav_view);
-        NavigationUI.setupWithNavController(sideNavView, navController);
+
+        MyNavigationUISetup.setupWithNavController(sideNavView, navController);
     }
 
     private void uriNavigate() {
@@ -218,4 +221,8 @@ public class MainActivity extends AppCompatActivity
         }
 
     }
+
+    // CYKA KURWA COPY PASTE FROM NAVIGATION UI
+
+
 }
