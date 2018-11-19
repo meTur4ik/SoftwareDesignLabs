@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -18,12 +20,20 @@ import java.util.regex.Pattern;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
+import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
+// user, async tasks -> futures, кнопка на тулбаре, label'ы
+//glide images
+//отписать про onnavigation
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+    implements NavigationView.OnNavigationItemSelectedListener {
     private static final int PERMISSION_REQUEST_CODE = 228;
     private NavController navController;
     //private NavController controller = new NavController(this);
@@ -38,6 +48,18 @@ public class MainActivity extends AppCompatActivity {
 
         navController = host.getNavController();
 
+        navController.addOnNavigatedListener(new NavController.OnNavigatedListener() {
+            @Override
+            public void onNavigated(@NonNull NavController controller, @NonNull NavDestination destination) {
+                NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
+                        .findFragmentById(R.id.nav_host_fragment);
+                Fragment current = navHostFragment.getChildFragmentManager().getFragments().get(1);
+                Log.i("changePage", current.getId() + " " + R.id.editUserProfile_Fragment);
+                if (current.getId() == R.id.editUserProfile_Fragment)
+                    Log.i("ololo", Integer.toString(current.getId()));
+            }
+        });
+
         Toolbar toolbar = findViewById(R.id.main_tool_bar);
         setSupportActionBar(toolbar);
 
@@ -47,6 +69,12 @@ public class MainActivity extends AppCompatActivity {
             requestPermissions();
 
         uriNavigate();
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        System.gc();
     }
 
     @Override
@@ -66,16 +94,22 @@ public class MainActivity extends AppCompatActivity {
             if (shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE)){
                 Toast.makeText(this, "Phone State permission is needed to show IMEI",
                         Toast.LENGTH_LONG).show();
-                requestPermissions();
+                requestPermissions(new String[] {Manifest.permission.READ_PHONE_STATE}, PERMISSION_REQUEST_CODE);
             }
         }
-
-        if (!allowed.get(Manifest.permission.READ_EXTERNAL_STORAGE) ||
-                !allowed.get(Manifest.permission.WRITE_EXTERNAL_STORAGE)){
-            if (shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE)){
+        if(!allowed.get(Manifest.permission.READ_EXTERNAL_STORAGE))
+        {
+            if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 Toast.makeText(this, "Read and Write permission is needed to save user data",
                         Toast.LENGTH_LONG).show();
-                requestPermissions();
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
+            }
+        }
+        if(!allowed.get(Manifest.permission.CAMERA)){
+            if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)){
+                Toast.makeText(this, "Camera is needed for avatar photos",
+                        Toast.LENGTH_LONG).show();
+                requestPermissions(new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CODE);
             }
         }
     }
@@ -93,8 +127,22 @@ public class MainActivity extends AppCompatActivity {
             case R.id.about_toolbar_button:
                 navController.navigate(R.id.phoneState);
                 return true;
+            case R.id.menu_toolbar_button:
+                DrawerLayout slider = findViewById(R.id.drawer_layout);
+                slider.openDrawer(Gravity.RIGHT);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item){
+        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.nav_host_fragment);
+        Fragment current = navHostFragment.getChildFragmentManager().getFragments().get(0);
+        Toast.makeText(this, current.getId() + " " + R.id.editUserProfile, Toast.LENGTH_LONG).show();
+        if (current.getId() == R.id.editUserProfile)
+            Toast.makeText(this, "ololo", Toast.LENGTH_LONG).show();
+        return true; //выделять или нет
     }
 
     private boolean hasPermissions(){
@@ -103,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
                 Manifest.permission.READ_PHONE_STATE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.CAMERA,
         };
 
         for (String permission : permissions){
@@ -119,7 +168,8 @@ public class MainActivity extends AppCompatActivity {
         String[] permissions = new String[] {
                 Manifest.permission.READ_PHONE_STATE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.CAMERA,
         };
         requestPermissions(permissions, PERMISSION_REQUEST_CODE);
     }
@@ -130,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void uriNavigate() {
+        //adb shell am start -a android.intent.action.VIEW -d "http://www.labs.ru/page/2"
         Uri data = getIntent().getData();
         String text = data == null? null : data.getLastPathSegment();
         Pattern p = Pattern.compile("^/page/\\d*$");

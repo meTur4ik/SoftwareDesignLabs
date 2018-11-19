@@ -2,22 +2,31 @@ package layout;
 
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
-import functions.FunctionsStock;
+import functions.SerializingFunctions;
+import instances.AppUser;
 
+import android.os.Parcelable;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.asus_user.labs.R;
@@ -27,18 +36,30 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 import static android.app.Activity.RESULT_OK;
 
 
 public class EditUserProfileFragment extends Fragment {
     private static final int REQUEST_LOAD_IMAGE = 229;
+    private static final int REQUEST_TAKE_PHOTO = 230;
+
     private static final int PERMISSION_REQUEST_CODE = 228;
     private static final String SERIALIZING_DIRECTORY = UserProfileFragment.SERIALIZING_DIRECTORY;
     private static final String USER_SETTINGS_FILE = UserProfileFragment.USER_SETTINGS_FILE;
     private static final String USER_AVATAR_FILE = UserProfileFragment.USER_AVATAR_FILE;
 
+    private AppUser user;
     private View editUserProfileView;
 
     @Override
@@ -46,7 +67,10 @@ public class EditUserProfileFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         editUserProfileView = inflater.inflate(R.layout.fragment_edit_user_profile, container, false);
-        new FunctionsStock.ImageDeserialize((ImageView) editUserProfileView.findViewById(R.id.avatarEditImageView)).execute();
+
+//        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        deserializeAvatar();
+
         setLoadButtonAction();
         setDoneButtonAction();
         if (hasPermissions()) {
@@ -62,13 +86,48 @@ public class EditUserProfileFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_LOAD_IMAGE && resultCode == RESULT_OK) {
-            Uri imageUri = data.getData();
-            ImageView imgView = new ImageView(getActivity());
-            imgView.setImageURI(imageUri);
-            new FunctionsStock.ImageSerialize(imgView).execute(getActivity());
-            ImageView avatar = editUserProfileView.findViewById(R.id.avatarEditImageView);
-            avatar.setImageURI(imageUri);
+        switch (requestCode){
+            case REQUEST_LOAD_IMAGE:{
+                if(resultCode != Activity.RESULT_OK)
+                    return;
+
+                Uri imageUri = data.getData();
+                //serialize avatar
+
+                ImageView avatar = editUserProfileView.findViewById(R.id.avatarEditImageView);
+                avatar.setImageURI(imageUri);
+                serializeAvatar(avatar);
+                break;
+            }
+            case REQUEST_TAKE_PHOTO: {
+                if(requestCode != Activity.RESULT_OK)
+                    return;
+                Bitmap takenPhoto = (Bitmap) data.getExtras().get("data");
+
+                ImageView avatar = editUserProfileView.findViewById(R.id.avatarEditImageView);
+                avatar.setImageBitmap(takenPhoto);
+                serializeAvatar(avatar);
+                //getDialog().dismiss();
+                break;
+            }
+        }
+
+    }
+
+    private void serializeAvatar(ImageView imgView){
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future saver = executor.submit(
+                new SerializingFunctions.SaveImage(imgView, SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE)
+        );
+        try {
+            boolean success = (boolean)saver.get();
+            if (success)
+                Toast.makeText(getActivity(), "avatar saved", Toast.LENGTH_LONG).show();
+            else
+                Toast.makeText(getActivity(), "saving failed", Toast.LENGTH_LONG).show();
+
+        } catch (InterruptedException|ExecutionException e) {
+            Toast.makeText(getActivity(),e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -77,11 +136,43 @@ public class EditUserProfileFragment extends Fragment {
         load.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent gallery = new Intent(Intent.ACTION_GET_CONTENT);
-                gallery.setType("image/*");
-                startActivityForResult(gallery, REQUEST_LOAD_IMAGE);
+                startActivityForResult(getPickImageIntent(getActivity()), REQUEST_LOAD_IMAGE);
             }
         });
+    }
+
+    public static Intent getPickImageIntent(Context context) {
+        Intent chooserIntent = null;
+
+        List<Intent> intentList = new ArrayList<>();
+
+        Intent pickIntent = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        pickIntent.putExtra("requestCode", REQUEST_LOAD_IMAGE);
+        Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        takePhotoIntent.putExtra("return-data", true);
+        takePhotoIntent.putExtra("requestCode", REQUEST_TAKE_PHOTO);
+        intentList = addIntentsToList(context, intentList, pickIntent);
+        intentList = addIntentsToList(context, intentList, takePhotoIntent);
+
+        if (intentList.size() > 0) {
+            chooserIntent = Intent.createChooser(intentList.remove(intentList.size() - 1),
+                    context.getString(R.string.pick_image_intent_text));
+            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentList.toArray(new Parcelable[]{}));
+        }
+
+        return chooserIntent;
+    }
+
+    private static List<Intent> addIntentsToList(Context context, List<Intent> list, Intent intent) {
+        List<ResolveInfo> resInfo = context.getPackageManager().queryIntentActivities(intent, 0);
+        for (ResolveInfo resolveInfo : resInfo) {
+            String packageName = resolveInfo.activityInfo.packageName;
+            Intent targetedIntent = new Intent(intent);
+            targetedIntent.setPackage(packageName);
+            list.add(targetedIntent);
+        }
+        return list;
     }
 
     private void setDoneButtonAction() {
@@ -97,21 +188,33 @@ public class EditUserProfileFragment extends Fragment {
         });
     }
 
+    private void deserializeAvatar() {
+        ImageView avatarEditView = editUserProfileView.findViewById(R.id.avatarEditImageView);
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<Bitmap> loader = executor.submit(
+                new SerializingFunctions.LoadImage(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE));
+        try {
+            avatarEditView.setImageBitmap(loader.get());
+        } catch (ExecutionException|InterruptedException e) {
+            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
     private void deserializeUser() {
-        Properties props = FunctionsStock.deserializeUser(getActivity());
+        Properties props = SerializingFunctions.deserializeUser();
+        user = new AppUser(props);
         EditText lastNameEditText = editUserProfileView.findViewById(R.id.lastNameEditText);
         EditText firstNameEditText = editUserProfileView.findViewById(R.id.firstNameEditText);
         EditText phoneEditText = editUserProfileView.findViewById(R.id.phoneEditText);
         EditText emailEditText = editUserProfileView.findViewById(R.id.emailEditText);
-        lastNameEditText.setText(props.getProperty("last_name"));
-        firstNameEditText.setText(props.getProperty("first_name"));
-        phoneEditText.setText(props.getProperty("phone"));
-        emailEditText.setText(props.getProperty("email"));
+        lastNameEditText.setText(user.getLastName());
+        firstNameEditText.setText(user.getFirstName());
+        phoneEditText.setText(user.getPhoneNumber());
+        emailEditText.setText(user.getEmail());
     }
 
     private void serializeUser() {
-        Properties props = new Properties();
-        FunctionsStock.setWorkingDirectory();
+        SerializingFunctions.setWorkingDirectory();
         try {
             new File(SERIALIZING_DIRECTORY + "/" + USER_SETTINGS_FILE).createNewFile();
         } catch (IOException e) {
@@ -127,10 +230,12 @@ public class EditUserProfileFragment extends Fragment {
             EditText firstNameEditText = editUserProfileView.findViewById(R.id.firstNameEditText);
             EditText phoneEditText = editUserProfileView.findViewById(R.id.phoneEditText);
             EditText emailEditText = editUserProfileView.findViewById(R.id.emailEditText);
-            props.setProperty("last_name", lastNameEditText.getText().toString());
-            props.setProperty("first_name", firstNameEditText.getText().toString());
-            props.setProperty("phone", phoneEditText.getText().toString());
-            props.setProperty("email", emailEditText.getText().toString());
+            user.setFirstName(firstNameEditText.getText().toString());
+            user.setLastName(lastNameEditText.getText().toString());
+            user.setPhoneNumber(phoneEditText.getText().toString());
+            user.setEmail(emailEditText.getText().toString());
+
+            Properties props = user.toProperties();
 
             props.store(outputFile, null);
         } catch (IOException e) {

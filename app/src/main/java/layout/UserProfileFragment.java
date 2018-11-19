@@ -3,6 +3,7 @@ package layout;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -18,12 +19,17 @@ import com.example.asus_user.labs.R;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
-import functions.FunctionsStock;
+import functions.SerializingFunctions;
+import instances.AppUser;
 
-import static functions.FunctionsStock.setWorkingDirectory;
+import static functions.SerializingFunctions.setWorkingDirectory;
 
 public class UserProfileFragment extends Fragment {
     private static final int PERMISSION_REQUEST_CODE = 228;
@@ -31,6 +37,7 @@ public class UserProfileFragment extends Fragment {
     public static final String USER_SETTINGS_FILE = "user_settings.properties";
     public static final String USER_AVATAR_FILE = "avatar.jpeg";
 
+    private AppUser user;
     private View userProfileView;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -69,21 +76,29 @@ public class UserProfileFragment extends Fragment {
     }
 
     private void deserializeUser() {
-        Properties props = FunctionsStock.deserializeUser(getActivity());
+        Properties props = SerializingFunctions.deserializeUser();
 
         TextView lastNameTV = userProfileView.findViewById(R.id.lastNameTextView);
         TextView firstNameTV = userProfileView.findViewById(R.id.firstNameTextView);
         TextView phoneTV = userProfileView.findViewById(R.id.phoneTextView);
         TextView emailTV = userProfileView.findViewById(R.id.emailTextView);
-        lastNameTV.setText(props.getProperty("last_name"));
-        firstNameTV.setText(props.getProperty("first_name"));
-        phoneTV.setText(props.getProperty("phone"));
-        emailTV.setText(props.getProperty("email"));
+        user = new AppUser(props);
+        lastNameTV.setText(user.getLastName());
+        firstNameTV.setText(user.getFirstName());
+        phoneTV.setText(user.getPhoneNumber());
+        emailTV.setText(user.getEmail());
     }
 
     private void deserializeAvatar() {
-        ImageView avatarView = userProfileView.findViewById(R.id.avatarImageView);
-        new FunctionsStock.ImageDeserialize(avatarView).execute();
+        ImageView avatarEditView = userProfileView.findViewById(R.id.avatarImageView);
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<Bitmap> loader = executor.submit(
+                new SerializingFunctions.LoadImage(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE));
+        try {
+            avatarEditView.setImageBitmap(loader.get());
+        } catch (ExecutionException |InterruptedException e) {
+            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     private boolean hasPermissions(){

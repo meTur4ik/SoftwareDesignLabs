@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/editUserProfile_Fragment"
     tools:context="layout.EditUserProfileFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -17,7 +18,7 @@
             android:layout_marginBottom="14dp"
             android:ems="10"
             android:inputType="textPersonName"
-            android:text="Name"
+            android:hint="@string/last_name"
             app:layout_constraintBottom_toTopOf="@+id/firstNameEditText"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -30,7 +31,7 @@
             android:layout_marginBottom="16dp"
             android:ems="10"
             android:inputType="textPersonName"
-            android:text="Name"
+            android:hint="@string/first_name"
             app:layout_constraintBottom_toTopOf="@+id/emailEditText"
             app:layout_constraintStart_toStartOf="@+id/lastNameEditText"
             app:layout_constraintTop_toBottomOf="@+id/lastNameEditText" />
@@ -57,6 +58,7 @@
             android:layout_marginBottom="17dp"
             android:ems="10"
             android:inputType="textEmailAddress"
+            android:hint="@string/email"
             app:layout_constraintBottom_toTopOf="@+id/phoneEditText"
             app:layout_constraintEnd_toEndOf="@+id/firstNameEditText"
             app:layout_constraintTop_toBottomOf="@+id/firstNameEditText" />
@@ -69,6 +71,7 @@
             android:layout_marginBottom="95dp"
             android:ems="10"
             android:inputType="phone"
+            android:hint="@string/phone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/emailEditText"
             app:layout_constraintTop_toBottomOf="@+id/emailEditText" />
