@@ -11,6 +11,9 @@
     <string name="done">Done</string>
     <string name="about">About</string>
     <string name="pick_image_intent_text">asd</string>
+    <string name="non_saved_warning">your data might not have been saved. do you want to proceed?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

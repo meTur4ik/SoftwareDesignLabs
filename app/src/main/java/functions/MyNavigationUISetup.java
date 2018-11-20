@@ -1,10 +1,14 @@
 package functions;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewParent;
+import android.widget.Toast;
 
+import com.example.asus_user.labs.R;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.annotation.NonNull;
@@ -22,13 +26,15 @@ public class MyNavigationUISetup {
     public static void setupWithNavController(@NonNull final NavigationView navigationView, @NonNull final NavController navController) {
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                Log.i("selectItem", navController.getCurrentDestination().getLabel().toString());
-                boolean handled = onNavDestinationSelected(item, navController, true);
+                boolean handled = onNavDestinationSelected(item, navController, true, navigationView);
                 if (handled) {
                     ViewParent parent = navigationView.getParent();
                     if (parent instanceof DrawerLayout) {
                         ((DrawerLayout)parent).closeDrawer(navigationView);
                     }
+                }
+                else {
+                    Toast.makeText(navigationView.getContext(), "ain't allowed to do this now", Toast.LENGTH_LONG).show();
                 }
 
                 return handled;
@@ -49,8 +55,10 @@ public class MyNavigationUISetup {
         });
     }
 
-    private static boolean onNavDestinationSelected(@NonNull MenuItem item,
-                                                    @NonNull NavController navController, boolean popUp) {
+    private static boolean onNavDestinationSelected(@NonNull final MenuItem item,
+                                                    @NonNull final NavController navController,
+                                                    boolean popUp,
+                                                    NavigationView navView) {
         NavOptions.Builder builder = new NavOptions.Builder()
                 .setLaunchSingleTop(true)
                 .setEnterAnim(androidx.navigation.ui.R.anim.nav_default_enter_anim)
@@ -60,11 +68,37 @@ public class MyNavigationUISetup {
         if (popUp) {
             builder.setPopUpTo(navController.getGraph().getStartDestination(), false);
         }
-        NavOptions options = builder.build();
+        final NavOptions options = builder.build();
         try {
             //TODO provide proper API instead of using Exceptions as Control-Flow.
-            navController.navigate(item.getItemId(), null, options);
-            return true;
+            boolean goOut = false;
+
+            Log.i("selectItem", navController.getCurrentDestination().getLabel().toString());
+            if(navController.getCurrentDestination().getLabel().toString().equals("fragment_edit_user")){
+                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(navView.getContext());
+                dialogBuilder.setMessage(R.string.non_saved_warning).setCancelable(false);
+                dialogBuilder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        navController.navigate(item.getItemId(), null, options);
+                        dialog.dismiss();
+                    }
+                });
+                dialogBuilder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                AlertDialog alertDialog = dialogBuilder.create();
+                alertDialog.show();
+                return true;
+            }
+            else {
+                navController.navigate(item.getItemId(), null, options);
+                return true;
+            }
         } catch (IllegalArgumentException e) {
             return false;
         }
