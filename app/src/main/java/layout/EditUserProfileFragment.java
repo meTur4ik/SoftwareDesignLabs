@@ -23,10 +23,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.asus_user.labs.R;
@@ -39,15 +39,10 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-
-import static android.app.Activity.RESULT_OK;
 
 
 public class EditUserProfileFragment extends Fragment {
@@ -68,7 +63,6 @@ public class EditUserProfileFragment extends Fragment {
         // Inflate the layout for this fragment
         editUserProfileView = inflater.inflate(R.layout.fragment_edit_user_profile, container, false);
 
-//        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         deserializeAvatar();
 
         setLoadButtonAction();
@@ -181,6 +175,7 @@ public class EditUserProfileFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 serializeUser();
+                hideKeyboard(getActivity());
                 ((NavHostFragment) getActivity().getSupportFragmentManager()
                         .findFragmentById(R.id.nav_host_fragment))
                         .getNavController().navigate(R.id.userProfile);
@@ -207,9 +202,9 @@ public class EditUserProfileFragment extends Fragment {
         EditText firstNameEditText = editUserProfileView.findViewById(R.id.firstNameEditText);
         EditText phoneEditText = editUserProfileView.findViewById(R.id.phoneEditText);
         EditText emailEditText = editUserProfileView.findViewById(R.id.emailEditText);
-        lastNameEditText.setText(user.getLastName());
-        firstNameEditText.setText(user.getFirstName());
-        phoneEditText.setText(user.getPhoneNumber());
+        lastNameEditText.setText(user.getLast_name());
+        firstNameEditText.setText(user.getFirst_name());
+        phoneEditText.setText(user.getPhone_number());
         emailEditText.setText(user.getEmail());
     }
 
@@ -230,9 +225,9 @@ public class EditUserProfileFragment extends Fragment {
             EditText firstNameEditText = editUserProfileView.findViewById(R.id.firstNameEditText);
             EditText phoneEditText = editUserProfileView.findViewById(R.id.phoneEditText);
             EditText emailEditText = editUserProfileView.findViewById(R.id.emailEditText);
-            user.setFirstName(firstNameEditText.getText().toString());
-            user.setLastName(lastNameEditText.getText().toString());
-            user.setPhoneNumber(phoneEditText.getText().toString());
+            user.setFirst_name(firstNameEditText.getText().toString());
+            user.setLast_name(lastNameEditText.getText().toString());
+            user.setPhone_number(phoneEditText.getText().toString());
             user.setEmail(emailEditText.getText().toString());
 
             Properties props = user.toProperties();
@@ -285,5 +280,16 @@ public class EditUserProfileFragment extends Fragment {
             }
         }
         return true;
+    }
+
+    public static void hideKeyboard(Activity activity) {
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        //Find the currently focused view, so we can grab the correct window token from it.
+        View view = activity.getCurrentFocus();
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null) {
+            view = new View(activity);
+        }
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 }

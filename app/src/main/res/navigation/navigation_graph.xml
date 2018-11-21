@@ -44,4 +44,12 @@
         tools:layout="@layout/fragment_ololo">
 
     </fragment>
+
+    <fragment
+        android:id="@+id/registerUserFragment"
+        android:name="layout.RegistrationFragment"
+        android:label="fragment_registration"
+        tools:layout="@layout/fragment_registration">
+
+    </fragment>
 </navigation>

@@ -22,4 +22,18 @@
     <string name="email">email</string>
     <string name="phone">phone</string>
     <string name="menu">Menu</string>
+    <string name="register">Register</string>
+    <string name="ololo">ololo</string>
+
+    <!-- Firebase Database Nodes -->
+    <string name="dbnode_users">users</string>
+
+    <!--Firebase Database Fields -->
+    <string name="db_users_field_first_name">first_name</string>
+    <string name="db_users_field_last_name">last_name</string>
+    <string name="db_users_field_email">email</string>
+    <string name="db_users_field_id">id</string>
+    <string name="db_users_field_phone">phone</string>
+    <string name="db_users_field_avatar_path">avatar_path</string>
+    
 </resources>

@@ -17,6 +17,10 @@
 
         <item
             android:id="@+id/ololoFragment"
-            android:title="ololo" />
+            android:title="@string/ololo" />
+
+        <!--<item
+            android:id="@+id/registerUserFragment"
+            android:title="@string/register"/> -->
     </group>
 </menu>

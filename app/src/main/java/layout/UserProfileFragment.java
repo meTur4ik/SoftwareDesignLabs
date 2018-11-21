@@ -83,9 +83,9 @@ public class UserProfileFragment extends Fragment {
         TextView phoneTV = userProfileView.findViewById(R.id.phoneTextView);
         TextView emailTV = userProfileView.findViewById(R.id.emailTextView);
         user = new AppUser(props);
-        lastNameTV.setText(user.getLastName());
-        firstNameTV.setText(user.getFirstName());
-        phoneTV.setText(user.getPhoneNumber());
+        lastNameTV.setText(user.getLast_name());
+        firstNameTV.setText(user.getFirst_name());
+        phoneTV.setText(user.getPhone_number());
         emailTV.setText(user.getEmail());
     }
 
