@@ -3,16 +3,21 @@ package layout;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+import functions.MyNavigationUISetup;
 import functions.SerializingFunctions;
 import instances.AppUser;
 
@@ -22,7 +27,6 @@ import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -36,13 +40,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 
 public class EditUserProfileFragment extends Fragment {
@@ -90,7 +91,7 @@ public class EditUserProfileFragment extends Fragment {
 
                 ImageView avatar = editUserProfileView.findViewById(R.id.avatarEditImageView);
                 avatar.setImageURI(imageUri);
-                serializeAvatar(avatar);
+                //serializeAvatar();
                 break;
             }
             case REQUEST_TAKE_PHOTO: {
@@ -100,7 +101,7 @@ public class EditUserProfileFragment extends Fragment {
 
                 ImageView avatar = editUserProfileView.findViewById(R.id.avatarEditImageView);
                 avatar.setImageBitmap(takenPhoto);
-                serializeAvatar(avatar);
+                //serializeAvatar();
                 //getDialog().dismiss();
                 break;
             }
@@ -108,21 +109,43 @@ public class EditUserProfileFragment extends Fragment {
 
     }
 
-    private void serializeAvatar(ImageView imgView){
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future saver = executor.submit(
-                new SerializingFunctions.SaveImage(imgView, SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE)
+    private void serializeAvatar(){
+        ImageView avatarImageView = editUserProfileView.findViewById(R.id.avatarEditImageView);
+        WeakReference<Bitmap> bitmapWeakReference = new WeakReference<Bitmap>(
+                ((BitmapDrawable)avatarImageView.getDrawable()).getBitmap()
         );
-        try {
-            boolean success = (boolean)saver.get();
-            if (success)
-                Toast.makeText(getActivity(), "avatar saved", Toast.LENGTH_LONG).show();
-            else
-                Toast.makeText(getActivity(), "saving failed", Toast.LENGTH_LONG).show();
 
-        } catch (InterruptedException|ExecutionException e) {
-            Toast.makeText(getActivity(),e.getMessage(), Toast.LENGTH_LONG).show();
-        }
+        ProgressDialog pd = new ProgressDialog(getActivity());
+        pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        pd.setMessage("Saving photo");
+        pd.setOwnerActivity(getActivity());
+        pd.setIndeterminate(true);
+        pd.setCancelable(false);
+
+        final FragmentActivity that = this.getActivity();
+
+        new SerializingFunctions.SaveAvatarAndBackToProfile(bitmapWeakReference,
+                SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE, new SerializingFunctions.SaveListener() {
+            @Override
+            public void onBeforeSave() {
+
+            }
+
+            @Override
+            public void onAfterSave() {
+                NavController controller = ((NavHostFragment)(that).getSupportFragmentManager()
+                        .findFragmentById(R.id.nav_host_fragment))
+                        .getNavController();
+
+                if (controller != null)
+                    controller.navigate(R.id.userProfile);
+            }
+
+            @Override
+            public void onError() {
+
+            }
+        }).execute();
     }
 
     private void setLoadButtonAction(){
@@ -175,24 +198,19 @@ public class EditUserProfileFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 serializeUser();
-                hideKeyboard(getActivity());
-                ((NavHostFragment) getActivity().getSupportFragmentManager()
+                serializeAvatar();
+                MyNavigationUISetup.hideKeyboard(getActivity());
+                /*((NavHostFragment) getActivity().getSupportFragmentManager()
                         .findFragmentById(R.id.nav_host_fragment))
-                        .getNavController().navigate(R.id.userProfile);
+                        .getNavController().navigate(R.id.userProfile);*/
             }
         });
     }
 
     private void deserializeAvatar() {
         ImageView avatarEditView = editUserProfileView.findViewById(R.id.avatarEditImageView);
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<Bitmap> loader = executor.submit(
-                new SerializingFunctions.LoadImage(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE));
-        try {
-            avatarEditView.setImageBitmap(loader.get());
-        } catch (ExecutionException|InterruptedException e) {
-            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
-        }
+        SerializingFunctions.loadAvatar(avatarEditView,
+                new File(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE));
     }
 
     private void deserializeUser() {
@@ -280,16 +298,5 @@ public class EditUserProfileFragment extends Fragment {
             }
         }
         return true;
-    }
-
-    public static void hideKeyboard(Activity activity) {
-        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
-        //Find the currently focused view, so we can grab the correct window token from it.
-        View view = activity.getCurrentFocus();
-        //If no view currently has focus, create a new one, just so we can grab a window token from it
-        if (view == null) {
-            view = new View(activity);
-        }
-        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 }

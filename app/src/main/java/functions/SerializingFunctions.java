@@ -1,15 +1,19 @@
 package functions;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.Image;
 import android.os.AsyncTask;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.asus_user.labs.R;
 
 import java.io.File;
@@ -21,14 +25,24 @@ import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
+import androidx.fragment.app.FragmentActivity;
+import androidx.navigation.fragment.NavHostFragment;
+import glide.GlideApp;
 import layout.UserProfileFragment;
 
 public abstract class SerializingFunctions {
     private static final String SERIALIZING_DIRECTORY = UserProfileFragment.SERIALIZING_DIRECTORY;
     private static final String USER_SETTINGS_FILE = UserProfileFragment.USER_SETTINGS_FILE;
     private static final String USER_AVATAR_FILE = UserProfileFragment.USER_AVATAR_FILE;
+
+    public interface SaveListener {
+        void onBeforeSave();
+        void onAfterSave();
+        void onError();
+    }
 
     public static void setWorkingDirectory(){
         final File wd = new File(SERIALIZING_DIRECTORY);
@@ -58,52 +72,75 @@ public abstract class SerializingFunctions {
         return props;
     }
 
-    public static class SaveImage implements Callable<Boolean> {
+    /*public static boolean saveAvatar(ImageView imageView, String path){
+        ProgressDialog progressDialog = new ProgressDialog(imageView.getContext());
 
-        private Bitmap imageToSave;
-        private final String path;
+        Bitmap imageToSave = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+        if(imageToSave == null)
+            return false;
 
-        public SaveImage(ImageView imageView, String path) {
-            imageToSave = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
-            this.path = path;
+        try (FileOutputStream out = new FileOutputStream(path)) {
+            imageToSave.compress(Bitmap.CompressFormat.PNG, 100, out);
+        } catch (IOException e) {
+            return false;
         }
+        return true;
+    }*/
 
-        public SaveImage(Bitmap image, String path) {
-            imageToSave = image;
+
+    public static class SaveAvatarAndBackToProfile extends AsyncTask<Void, Void, Boolean>{
+
+        private WeakReference<Bitmap> bitmapWeakReference;
+        private final String path;
+        private final SaveListener listener;
+
+        public SaveAvatarAndBackToProfile(WeakReference<Bitmap> bitmapWeakReference, String path, SaveListener listener) {
+            this.bitmapWeakReference = bitmapWeakReference;
             this.path = path;
+            this.listener = listener;
         }
 
         @Override
-        public Boolean call() throws NullPointerException {
-            if (imageToSave == null)
-                throw new NullPointerException("no image");
+        protected void onPreExecute() {
+            super.onPreExecute();
+            listener.onBeforeSave();
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            Bitmap imageToSave = bitmapWeakReference.get();
+            if(imageToSave == null)
+                return false;
 
             try (FileOutputStream out = new FileOutputStream(path)) {
                 imageToSave.compress(Bitmap.CompressFormat.PNG, 100, out);
             } catch (IOException e) {
-                return false;
+                listener.onError();
             }
             return true;
         }
-    }
-
-    public static class LoadImage implements Callable<Bitmap> {
-
-        private final String path;
-        public LoadImage(String path) {
-            this.path = path;
-        }
 
         @Override
-        public Bitmap call() throws FileNotFoundException {
-            File avatarFile = new File(path);
-            Bitmap avatarBitmap = null;
-            if (avatarFile.exists()) {
-                avatarBitmap = BitmapFactory.decodeFile(avatarFile.getAbsolutePath());
-            } else {
-              throw new FileNotFoundException ("file not found");
-            }
-            return avatarBitmap;
+        protected void onPostExecute(Boolean aBoolean) {
+            listener.onAfterSave();
+            super.onPostExecute(aBoolean);
         }
+    }
+
+    public static void loadAvatar(ImageView targetView, File targetFile){
+        if(!targetFile.exists()) {
+            try {
+                new FileOutputStream(targetFile).close();
+            } catch (IOException e) {
+                Log.i("CYKA", "KURWA");
+            }
+        }
+        GlideApp.with(targetView.getContext())
+                .asBitmap()
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
+                .load(targetFile)
+                .override(1280, 800)
+                .into(targetView);
     }
 }

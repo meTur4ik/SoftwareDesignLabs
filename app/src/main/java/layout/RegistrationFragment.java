@@ -31,9 +31,9 @@ public class RegistrationFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         AppUser user = new AppUser();
-        FirebaseDatabase.getInstance().getReference().child(getString(R.string.dbnode_users))
+        /*FirebaseDatabase.getInstance().getReference().child(getString(R.string.dbnode_users))
                 .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                .setValue(user);
+                .setValue(user);*/
         return inflater.inflate(R.layout.fragment_registration, container, false);
     }
 

@@ -35,5 +35,8 @@
     <string name="db_users_field_id">id</string>
     <string name="db_users_field_phone">phone</string>
     <string name="db_users_field_avatar_path">avatar_path</string>
-    
+    <string name="sign_in">Sign In</string>
+    <string name="password">password</string>
+    <string name="repeat_password">repeat password</string>
+
 </resources>

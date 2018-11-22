@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.example.asus_user.labs.R;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.io.File;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -90,15 +91,8 @@ public class UserProfileFragment extends Fragment {
     }
 
     private void deserializeAvatar() {
-        ImageView avatarEditView = userProfileView.findViewById(R.id.avatarImageView);
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<Bitmap> loader = executor.submit(
-                new SerializingFunctions.LoadImage(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE));
-        try {
-            avatarEditView.setImageBitmap(loader.get());
-        } catch (ExecutionException |InterruptedException e) {
-            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
-        }
+        ImageView userAvatar = userProfileView.findViewById(R.id.avatarImageView);
+        SerializingFunctions.loadAvatar(userAvatar, new File(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE));
     }
 
     private boolean hasPermissions(){

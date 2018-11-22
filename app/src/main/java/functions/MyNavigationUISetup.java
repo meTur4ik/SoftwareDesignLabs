@@ -1,11 +1,14 @@
 package functions;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewParent;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.example.asus_user.labs.R;
@@ -27,6 +30,7 @@ public class MyNavigationUISetup {
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 boolean handled = onNavDestinationSelected(item, navController, true, navigationView);
+                hideKeyboard((Activity) navigationView.getContext());
                 if (handled) {
                     ViewParent parent = navigationView.getParent();
                     if (parent instanceof DrawerLayout) {
@@ -102,5 +106,16 @@ public class MyNavigationUISetup {
         } catch (IllegalArgumentException e) {
             return false;
         }
+    }
+
+    public static void hideKeyboard(Activity activity) {
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        //Find the currently focused view, so we can grab the correct window token from it.
+        View view = activity.getCurrentFocus();
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null) {
+            view = new View(activity);
+        }
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 }
