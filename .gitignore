@@ -10,3 +10,4 @@
 .externalNativeBuild
 sign.jks
 google-services.json
+.idea

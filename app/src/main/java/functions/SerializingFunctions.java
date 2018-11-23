@@ -72,22 +72,6 @@ public abstract class SerializingFunctions {
         return props;
     }
 
-    /*public static boolean saveAvatar(ImageView imageView, String path){
-        ProgressDialog progressDialog = new ProgressDialog(imageView.getContext());
-
-        Bitmap imageToSave = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
-        if(imageToSave == null)
-            return false;
-
-        try (FileOutputStream out = new FileOutputStream(path)) {
-            imageToSave.compress(Bitmap.CompressFormat.PNG, 100, out);
-        } catch (IOException e) {
-            return false;
-        }
-        return true;
-    }*/
-
-
     public static class SaveAvatarAndBackToProfile extends AsyncTask<Void, Void, Boolean>{
 
         private WeakReference<Bitmap> bitmapWeakReference;
@@ -129,11 +113,12 @@ public abstract class SerializingFunctions {
 
     public static void loadAvatar(ImageView targetView, File targetFile){
         if(!targetFile.exists()) {
-            try {
+            /*try {
                 new FileOutputStream(targetFile).close();
             } catch (IOException e) {
                 Log.i("CYKA", "KURWA");
-            }
+            }*/
+            return;
         }
         GlideApp.with(targetView.getContext())
                 .asBitmap()

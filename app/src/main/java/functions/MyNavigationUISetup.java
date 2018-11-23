@@ -118,4 +118,8 @@ public class MyNavigationUISetup {
         }
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
+
+    public static void ShowIfDataCouldBeLost(NavController navController){
+
+    }
 }

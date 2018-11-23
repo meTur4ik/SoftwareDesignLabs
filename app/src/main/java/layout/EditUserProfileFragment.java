@@ -95,7 +95,7 @@ public class EditUserProfileFragment extends Fragment {
                 break;
             }
             case REQUEST_TAKE_PHOTO: {
-                if(requestCode != Activity.RESULT_OK)
+                if(resultCode != Activity.RESULT_OK)
                     return;
                 Bitmap takenPhoto = (Bitmap) data.getExtras().get("data");
 
@@ -115,7 +115,7 @@ public class EditUserProfileFragment extends Fragment {
                 ((BitmapDrawable)avatarImageView.getDrawable()).getBitmap()
         );
 
-        ProgressDialog pd = new ProgressDialog(getActivity());
+        final ProgressDialog pd = new ProgressDialog(getActivity());
         pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         pd.setMessage("Saving photo");
         pd.setOwnerActivity(getActivity());
@@ -128,11 +128,12 @@ public class EditUserProfileFragment extends Fragment {
                 SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE, new SerializingFunctions.SaveListener() {
             @Override
             public void onBeforeSave() {
-
+                pd.show();
             }
 
             @Override
             public void onAfterSave() {
+                pd.dismiss();
                 NavController controller = ((NavHostFragment)(that).getSupportFragmentManager()
                         .findFragmentById(R.id.nav_host_fragment))
                         .getNavController();
@@ -143,7 +144,7 @@ public class EditUserProfileFragment extends Fragment {
 
             @Override
             public void onError() {
-
+                Toast.makeText(that, "failed to save image", Toast.LENGTH_LONG).show();
             }
         }).execute();
     }
@@ -200,9 +201,6 @@ public class EditUserProfileFragment extends Fragment {
                 serializeUser();
                 serializeAvatar();
                 MyNavigationUISetup.hideKeyboard(getActivity());
-                /*((NavHostFragment) getActivity().getSupportFragmentManager()
-                        .findFragmentById(R.id.nav_host_fragment))
-                        .getNavController().navigate(R.id.userProfile);*/
             }
         });
     }

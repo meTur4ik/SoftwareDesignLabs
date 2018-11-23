@@ -1,6 +1,8 @@
 package com.example.asus_user.labs;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -130,7 +132,28 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         switch (id) {
             case R.id.about_toolbar_button:
-                navController.navigate(R.id.phoneState);
+                if (navController.getCurrentDestination().getLabel().toString().equals("fragment_edit_user")){
+                    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(MainActivity.this);
+                    dialogBuilder.setMessage(R.string.non_saved_warning).setCancelable(false);
+                    dialogBuilder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            navController.navigate(R.id.phoneState);
+                            dialog.dismiss();
+                        }
+                    });
+                    dialogBuilder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    });
+                    AlertDialog alertDialog = dialogBuilder.create();
+                    alertDialog.show();
+                }
+                else {
+                    navController.navigate(R.id.phoneState);
+                }
                 return true;
             case R.id.menu_toolbar_button:
                 DrawerLayout slider = findViewById(R.id.drawer_layout);

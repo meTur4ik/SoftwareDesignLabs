@@ -8,98 +8,81 @@
 
     tools:context="layout.EditUserProfileFragment">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-
-        <EditText
-            android:id="@+id/lastNameEditText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="14dp"
-            android:ems="10"
-            android:inputType="textPersonName"
-            android:hint="@string/last_name"
-            app:layout_constraintBottom_toTopOf="@+id/firstNameEditText"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/avatarEditImageView" />
-
-        <EditText
-            android:id="@+id/firstNameEditText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:ems="10"
-            android:inputType="textPersonName"
-            android:hint="@string/first_name"
-            app:layout_constraintBottom_toTopOf="@+id/emailEditText"
-            app:layout_constraintStart_toStartOf="@+id/lastNameEditText"
-            app:layout_constraintTop_toBottomOf="@+id/lastNameEditText" />
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="2">
 
         <ImageView
             android:id="@+id/avatarEditImageView"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:cropToPadding="true"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="14dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="13dp"
-            app:layout_constraintBottom_toTopOf="@+id/lastNameEditText"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:isScrollContainer="true"
-            android:scaleType="fitStart"
-            android:adjustViewBounds="true"
+            android:maxWidth="500px"
+            android:maxHeight="400px"
+            android:layout_column="0"
+            android:layout_columnSpan="2"
+            android:layout_gravity="top"
             tools:src="@tools:sample/avatars" />
+        <!--android:maxWidth="500px"
+            android:maxHeight="400px"-->
+
+        <EditText
+            android:id="@+id/lastNameEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"
+            android:hint="@string/last_name"
+            android:layout_column="0"
+            android:layout_columnSpan="2"
+            android:layout_row="1"/>
+
+        <EditText
+            android:id="@+id/firstNameEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"
+            android:hint="@string/first_name"
+            android:layout_column="0"
+            android:layout_columnSpan="2"
+            android:layout_row="2"/>
+
 
         <EditText
             android:id="@+id/emailEditText"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="1dp"
-            android:layout_marginBottom="17dp"
-            android:ems="10"
             android:inputType="textEmailAddress"
             android:hint="@string/email"
-            app:layout_constraintBottom_toTopOf="@+id/phoneEditText"
-            app:layout_constraintEnd_toEndOf="@+id/firstNameEditText"
-            app:layout_constraintTop_toBottomOf="@+id/firstNameEditText" />
+            android:layout_column="0"
+            android:layout_columnSpan="2"
+            android:layout_row="3"/>
 
         <EditText
             android:id="@+id/phoneEditText"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="1dp"
-            android:layout_marginBottom="95dp"
-            android:ems="10"
             android:inputType="phone"
             android:hint="@string/phone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="@+id/emailEditText"
-            app:layout_constraintTop_toBottomOf="@+id/emailEditText" />
+            android:layout_column="0"
+            android:layout_columnSpan="2"
+            android:layout_row="4"/>
 
         <Button
             android:id="@+id/loadPhotoButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="53dp"
-            android:layout_marginBottom="8dp"
             android:text="@string/load_image"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            android:layout_column="0"
+            android:layout_row="5"/>
 
         <Button
             android:id="@+id/doneButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
             android:text="@string/done"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="@+id/phoneEditText"
-            app:layout_constraintStart_toEndOf="@+id/phoneEditText" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_column="1"
+            android:layout_row="5"
+            android:layout_gravity="center"/>
+    </GridLayout>
 
 </ScrollView>
