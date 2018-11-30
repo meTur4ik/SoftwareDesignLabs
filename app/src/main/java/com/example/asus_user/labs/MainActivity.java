@@ -97,26 +97,29 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
         }
-        if (!allowed.get(Manifest.permission.READ_PHONE_STATE)){
+        if (allowed.containsKey(Manifest.permission.READ_PHONE_STATE) && !allowed.get(Manifest.permission.READ_PHONE_STATE)){
             if (shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE)){
                 Toast.makeText(this, "Phone State permission is needed to show IMEI",
                         Toast.LENGTH_LONG).show();
                 requestPermissions(new String[] {Manifest.permission.READ_PHONE_STATE}, PERMISSION_REQUEST_CODE);
+                return;
             }
         }
-        if(!allowed.get(Manifest.permission.READ_EXTERNAL_STORAGE))
+        if(allowed.containsKey(Manifest.permission.READ_EXTERNAL_STORAGE) && !allowed.get(Manifest.permission.READ_EXTERNAL_STORAGE))
         {
             if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 Toast.makeText(this, "Read and Write permission is needed to save user data",
                         Toast.LENGTH_LONG).show();
                 requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
+                return;
             }
         }
-        if(!allowed.get(Manifest.permission.CAMERA)){
+        if(allowed.containsKey(Manifest.permission.CAMERA) && !allowed.get(Manifest.permission.CAMERA)){
             if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)){
                 Toast.makeText(this, "Camera is needed for avatar photos",
                         Toast.LENGTH_LONG).show();
                 requestPermissions(new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CODE);
+                return;
             }
         }
     }
