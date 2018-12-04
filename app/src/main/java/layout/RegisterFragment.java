@@ -79,6 +79,7 @@ public class RegisterFragment extends Fragment {
                                         .setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
+                                        //FirebaseAuth.getInstance().getCurrentUser().ge
                                         FirebaseAuth.getInstance().signOut();
                                         goToLogin();
                                     }
