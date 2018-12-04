@@ -1,14 +1,14 @@
 package instances;
 
-import com.google.firebase.database.FirebaseDatabase;
-
 import java.util.Properties;
 
+import static instances.UserConstants.EMAIL_STR;
+import static instances.UserConstants.FIRST_NAME_STR;
+import static instances.UserConstants.LAST_NAME_STR;
+import static instances.UserConstants.PHONE_STR;
+
 public class AppUser {
-    public final String FIRST_NAME = "first_name";
-    public final String LAST_NAME = "last_name";
-    public final String EMAIL = "email";
-    public final String PHONE = "phone";
+
 
     // properties
 
@@ -87,18 +87,18 @@ public class AppUser {
     }
 
     public AppUser(Properties fileds){
-        first_name = fileds.getProperty(FIRST_NAME);
-        last_name = fileds.getProperty(LAST_NAME);
-        email = fileds.getProperty(EMAIL);
-        phone_number = fileds.getProperty(PHONE);
+        first_name = fileds.getProperty(FIRST_NAME_STR);
+        last_name = fileds.getProperty(LAST_NAME_STR);
+        email = fileds.getProperty(EMAIL_STR);
+        phone_number = fileds.getProperty(PHONE_STR);
     }
 
     public Properties toProperties(){
         Properties props = new Properties();
-        props.setProperty(FIRST_NAME, first_name);
-        props.setProperty(LAST_NAME, last_name);
-        props.setProperty(PHONE, phone_number);
-        props.setProperty(EMAIL, email);
+        props.setProperty(FIRST_NAME_STR, first_name);
+        props.setProperty(LAST_NAME_STR, last_name);
+        props.setProperty(PHONE_STR, phone_number);
+        props.setProperty(EMAIL_STR, email);
 
         return props;
     }
