@@ -4,17 +4,25 @@ package layout;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.asus_user.labs.MainActivity;
 import com.example.asus_user.labs.R;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 
 
 /**
@@ -50,11 +58,31 @@ public class LoginFragment extends Fragment {
 
     private void setUpSignInButton(){
         Button signIn = loginFragmentView.findViewById(R.id.auth_sign_in_button);
+
+        EditText emailET = loginFragmentView.findViewById(R.id.auth_sign_in_email);
+        EditText passwordET = loginFragmentView.findViewById(R.id.auth_sign_in_password);
+        final String email = emailET.getText().toString();
+        final String password = passwordET.getText().toString();
+
         signIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getContext(), MainActivity.class));
-                getActivity().finish();
+                FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
+                .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                    @Override
+                    public void onSuccess(AuthResult authResult) {
+                        startActivity(new Intent(getContext(), MainActivity.class));
+                        getActivity().finish();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("Auth Failed", e.getMessage());
+                        Toast.makeText(getContext(),"incorrect credentials", Toast.LENGTH_LONG).show();
+                    }
+                });
+
             }
         });
     }
