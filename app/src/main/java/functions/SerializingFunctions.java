@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.asus_user.labs.R;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -72,13 +73,13 @@ public abstract class SerializingFunctions {
         return props;
     }
 
-    public static class SaveAvatarAndBackToProfile extends AsyncTask<Void, Void, Boolean>{
+    public static class SaveAvatar extends AsyncTask<Void, Void, Boolean>{
 
         private WeakReference<Bitmap> bitmapWeakReference;
         private final String path;
         private final SaveListener listener;
 
-        public SaveAvatarAndBackToProfile(WeakReference<Bitmap> bitmapWeakReference, String path, SaveListener listener) {
+        public SaveAvatar(WeakReference<Bitmap> bitmapWeakReference, String path, SaveListener listener) {
             this.bitmapWeakReference = bitmapWeakReference;
             this.path = path;
             this.listener = listener;
@@ -111,14 +112,45 @@ public abstract class SerializingFunctions {
         }
     }
 
-    public static void loadAvatar(ImageView targetView, File targetFile){
+    public static class UploadImageBackground extends AsyncTask<Void, Void, byte[]>{
+
+        public interface UploadListener{
+            void onPreExecute();
+            void onPostExecute(byte[] bitmap);
+        }
+        WeakReference<Bitmap> picture;
+        UploadListener uploadListener;
+
+        public UploadImageBackground(Bitmap picture, UploadListener uploadListener) {
+            this.picture = new WeakReference<Bitmap>(picture);
+            this.uploadListener = uploadListener;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            uploadListener.onPreExecute();
+        }
+
+        @Override
+        protected byte[] doInBackground(Void... voids) {
+            Bitmap compressed = picture.get();
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            compressed.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] byteArray = stream.toByteArray();
+            return byteArray;
+        }
+
+        @Override
+        protected void onPostExecute(byte[] bitmap) {
+            uploadListener.onPostExecute(bitmap);
+            super.onPostExecute(bitmap);
+        }
+    }
+
+    public static boolean loadAvatar(ImageView targetView, File targetFile){
         if(!targetFile.exists()) {
-            /*try {
-                new FileOutputStream(targetFile).close();
-            } catch (IOException e) {
-                Log.i("CYKA", "KURWA");
-            }*/
-            return;
+            return false;
         }
         GlideApp.with(targetView.getContext())
                 .asBitmap()
@@ -127,5 +159,6 @@ public abstract class SerializingFunctions {
                 .load(targetFile)
                 .override(1280, 800)
                 .into(targetView);
+        return true;
     }
 }

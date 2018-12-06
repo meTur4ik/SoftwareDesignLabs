@@ -58,10 +58,6 @@ public class AppUser {
         return profile_image;
     }
 
-    public void setProfile_image(String profile_image) {
-        this.profile_image = profile_image;
-    }
-
     private String last_name;
 
     private String phone_number;
@@ -69,6 +65,10 @@ public class AppUser {
     private String email;
 
     private String id;
+
+    public void setProfile_image(String profile_image) {
+        this.profile_image = profile_image;
+    }
 
     private String profile_image;
 

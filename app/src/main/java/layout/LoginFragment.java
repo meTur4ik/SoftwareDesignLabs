@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+import functions.Utility;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -53,26 +54,34 @@ public class LoginFragment extends Fragment {
         setUpSignInButton();
         setUpRegisterButton();
 
+        if(FirebaseAuth.getInstance().getCurrentUser() !=  null &&
+                !FirebaseAuth.getInstance().getCurrentUser().isAnonymous()){
+            startApp();
+        }
+
         return loginFragmentView;
     }
 
     private void setUpSignInButton(){
         Button signIn = loginFragmentView.findViewById(R.id.auth_sign_in_button);
 
-        EditText emailET = loginFragmentView.findViewById(R.id.auth_sign_in_email);
-        EditText passwordET = loginFragmentView.findViewById(R.id.auth_sign_in_password);
-        final String email = emailET.getText().toString();
-        final String password = passwordET.getText().toString();
-
         signIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                EditText emailET = loginFragmentView.findViewById(R.id.auth_sign_in_email);
+                EditText passwordET = loginFragmentView.findViewById(R.id.auth_sign_in_password);
+                String email = emailET.getText().toString();
+                String password = passwordET.getText().toString();
+
+                if (!Utility.isNetworkAvailable(getContext())){
+                    return;
+                }
+
                 FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                     @Override
                     public void onSuccess(AuthResult authResult) {
-                        startActivity(new Intent(getContext(), MainActivity.class));
-                        getActivity().finish();
+                        startApp();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -96,5 +105,10 @@ public class LoginFragment extends Fragment {
                 navController.navigate(R.id.registerFragment);
             }
         });
+    }
+
+    private void startApp(){
+        startActivity(new Intent(getContext(), MainActivity.class));
+        getActivity().finish();
     }
 }

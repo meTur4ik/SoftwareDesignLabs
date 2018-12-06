@@ -26,34 +26,6 @@ public class HomeFragment extends Fragment {
         // Inflate the layout for this fragment
         homeFragmentView = inflater.inflate(R.layout.fragment_home, container, false);
 
-        setRegisterButtonClick();
-        setSignUpButtonClick();
-
         return homeFragmentView;
-    }
-
-    private void setRegisterButtonClick(){
-        Button registerButton = homeFragmentView.findViewById(R.id.register_button_home);
-        registerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ((NavHostFragment) getActivity().getSupportFragmentManager()
-                        .findFragmentById(R.id.nav_host_fragment))
-                        .getNavController()
-                        .navigate(R.id.registerUserFragment);
-            }
-        });
-    }
-    private void setSignUpButtonClick(){
-        Button signUpButton = homeFragmentView.findViewById(R.id.sign_in_button);
-        signUpButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ((NavHostFragment) getActivity().getSupportFragmentManager()
-                        .findFragmentById(R.id.nav_host_fragment))
-                        .getNavController()
-                        .navigate(R.id.userProfile);
-            }
-        });
     }
 }

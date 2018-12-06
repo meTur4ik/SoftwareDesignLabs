@@ -3,6 +3,7 @@ package com.example.asus_user.labs;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.HashMap;
 import java.util.List;
@@ -158,9 +160,16 @@ public class MainActivity extends AppCompatActivity
                     navController.navigate(R.id.phoneState);
                 }
                 return true;
+
             case R.id.menu_toolbar_button:
                 DrawerLayout slider = findViewById(R.id.drawer_layout);
                 slider.openDrawer(Gravity.RIGHT);
+                break;
+
+            case R.id.log_out_toolbar_button:
+                FirebaseAuth.getInstance().signOut();
+                startActivity(new Intent(MainActivity.this, AuthActivity.class));
+                MainActivity.this.finish();
         }
         return super.onOptionsItemSelected(item);
     }

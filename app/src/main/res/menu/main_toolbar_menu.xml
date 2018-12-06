@@ -10,6 +10,11 @@
     <!--android:icon="@drawable/daaa"-->
 
     <item
+        android:title="@string/log_out"
+        android:id="@+id/log_out_toolbar_button"
+        app:showAsAction="ifRoom"/>
+
+    <item
         android:title="@string/menu"
         android:id="@+id/menu_toolbar_button"
         app:showAsAction="always"/>

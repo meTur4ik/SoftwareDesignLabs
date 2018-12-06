@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
@@ -13,12 +14,14 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import functions.MyNavigationUISetup;
 import functions.SerializingFunctions;
+import functions.Utility;
 import instances.AppUser;
 
 import android.os.Parcelable;
@@ -27,14 +30,25 @@ import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.asus_user.labs.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -110,6 +124,11 @@ public class EditUserProfileFragment extends Fragment {
     }
 
     private void serializeAvatar(){
+        /*if (!Utility.isNetworkAvailable(getContext())){
+            Toast.makeText(getActivity(), "no network connection", Toast.LENGTH_LONG).show();
+            return;
+        }*/
+
         ImageView avatarImageView = editUserProfileView.findViewById(R.id.avatarEditImageView);
         WeakReference<Bitmap> bitmapWeakReference = new WeakReference<Bitmap>(
                 ((BitmapDrawable)avatarImageView.getDrawable()).getBitmap()
@@ -124,7 +143,7 @@ public class EditUserProfileFragment extends Fragment {
 
         final FragmentActivity that = this.getActivity();
 
-        new SerializingFunctions.SaveAvatarAndBackToProfile(bitmapWeakReference,
+        new SerializingFunctions.SaveAvatar(bitmapWeakReference,
                 SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE, new SerializingFunctions.SaveListener() {
             @Override
             public void onBeforeSave() {
@@ -132,21 +151,59 @@ public class EditUserProfileFragment extends Fragment {
             }
 
             @Override
-            public void onAfterSave() {
-                pd.dismiss();
-                NavController controller = ((NavHostFragment)(that).getSupportFragmentManager()
-                        .findFragmentById(R.id.nav_host_fragment))
-                        .getNavController();
-
-                if (controller != null)
-                    controller.navigate(R.id.userProfile);
-            }
+            public void onAfterSave() { }
 
             @Override
             public void onError() {
                 Toast.makeText(that, "failed to save image", Toast.LENGTH_LONG).show();
             }
         }).execute();
+
+        Bitmap bitmap = ((BitmapDrawable)avatarImageView.getDrawable()).getBitmap();
+        new SerializingFunctions.UploadImageBackground(bitmap, new SerializingFunctions.UploadImageBackground.UploadListener() {
+            @Override
+            public void onPreExecute() {
+                pd.show();
+            }
+
+            @Override
+            public void onPostExecute(byte[] bitmap) {
+                StorageReference reference = FirebaseStorage.getInstance().getReference()
+                        .child("users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/avatar/");
+
+                reference.putBytes(bitmap)
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        pd.dismiss();
+                        //navigate to profile
+                        NavController controller = ((NavHostFragment)(that).getSupportFragmentManager()
+                                .findFragmentById(R.id.nav_host_fragment))
+                                .getNavController();
+
+                        controller.navigate(R.id.userProfile);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(getContext(), "failed to upload image", Toast.LENGTH_LONG).show();
+                    }
+                });
+
+                reference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        FirebaseDatabase.getInstance().getReference()
+                                .child(getString(R.string.dbnode_users))
+                                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                .child(getString(R.string.db_users_field_avatar_path))
+                                .setValue(uri.toString());
+                    }
+                });
+            }
+        })
+        .execute();
     }
 
     private void setLoadButtonAction(){
@@ -198,8 +255,15 @@ public class EditUserProfileFragment extends Fragment {
         done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                serializeUser();
-                serializeAvatar();
+                if(Utility.isNetworkAvailable(getContext())) {
+
+                    serializeUser();
+                    serializeAvatar();
+
+                }
+                else {
+                    Toast.makeText(getContext(), "network is not available", Toast.LENGTH_LONG).show();
+                }
                 MyNavigationUISetup.hideKeyboard(getActivity());
             }
         });
@@ -225,6 +289,38 @@ public class EditUserProfileFragment extends Fragment {
     }
 
     private void serializeUser() {
+        if (!Utility.isNetworkAvailable(getContext())){
+            return;
+        }
+
+        final EditText lastNameEditText = editUserProfileView.findViewById(R.id.lastNameEditText);
+        final EditText firstNameEditText = editUserProfileView.findViewById(R.id.firstNameEditText);
+        final EditText phoneEditText = editUserProfileView.findViewById(R.id.phoneEditText);
+        final EditText emailEditText = editUserProfileView.findViewById(R.id.emailEditText);
+        final FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (fbUser != null){
+            fbUser.updateEmail(emailEditText.getText().toString())
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            AppUser usr = new AppUser();
+                            usr.setEmail(emailEditText.getText().toString());
+                            usr.setFirst_name(firstNameEditText.getText().toString());
+                            usr.setLast_name(lastNameEditText.getText().toString());
+                            usr.setPhone_number(phoneEditText.getText().toString());
+
+                            FirebaseDatabase.getInstance().getReference()
+                                    .child(getString(R.string.dbnode_users))
+                                    .child(fbUser.getUid())
+                                    .setValue(usr);
+                        }
+                    });
+        }
+
+
+
+
         SerializingFunctions.setWorkingDirectory();
         try {
             new File(SERIALIZING_DIRECTORY + "/" + USER_SETTINGS_FILE).createNewFile();
@@ -237,10 +333,6 @@ public class EditUserProfileFragment extends Fragment {
         try {
             outputFile = new FileOutputStream(SERIALIZING_DIRECTORY + "/" + USER_SETTINGS_FILE);
 
-            EditText lastNameEditText = editUserProfileView.findViewById(R.id.lastNameEditText);
-            EditText firstNameEditText = editUserProfileView.findViewById(R.id.firstNameEditText);
-            EditText phoneEditText = editUserProfileView.findViewById(R.id.phoneEditText);
-            EditText emailEditText = editUserProfileView.findViewById(R.id.emailEditText);
             user.setFirst_name(firstNameEditText.getText().toString());
             user.setLast_name(lastNameEditText.getText().toString());
             user.setPhone_number(phoneEditText.getText().toString());

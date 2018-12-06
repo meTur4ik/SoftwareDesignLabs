@@ -1,12 +1,15 @@
 package layout;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +20,13 @@ import android.widget.Toast;
 
 import com.example.asus_user.labs.R;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.File;
 import java.util.Properties;
@@ -25,9 +35,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 import functions.SerializingFunctions;
+import functions.Utility;
+import glide.GlideApp;
 import instances.AppUser;
 
 import static functions.SerializingFunctions.setWorkingDirectory;
@@ -57,7 +70,6 @@ public class UserProfileFragment extends Fragment {
         super.onStart();
         if (hasPermissions()) {
             deserializeUser();
-            deserializeAvatar();
         } else {
             showNoReadExternalStoragePermissionSnackbar();
         }
@@ -79,20 +91,53 @@ public class UserProfileFragment extends Fragment {
     private void deserializeUser() {
         Properties props = SerializingFunctions.deserializeUser();
 
-        TextView lastNameTV = userProfileView.findViewById(R.id.lastNameTextView);
-        TextView firstNameTV = userProfileView.findViewById(R.id.firstNameTextView);
-        TextView phoneTV = userProfileView.findViewById(R.id.phoneTextView);
-        TextView emailTV = userProfileView.findViewById(R.id.emailTextView);
-        user = new AppUser(props);
-        lastNameTV.setText(user.getLast_name());
-        firstNameTV.setText(user.getFirst_name());
-        phoneTV.setText(user.getPhone_number());
-        emailTV.setText(user.getEmail());
-    }
+        final TextView lastNameTV = userProfileView.findViewById(R.id.lastNameTextView);
+        final TextView firstNameTV = userProfileView.findViewById(R.id.firstNameTextView);
+        final TextView phoneTV = userProfileView.findViewById(R.id.phoneTextView);
+        final TextView emailTV = userProfileView.findViewById(R.id.emailTextView);
+        if(!Utility.isNetworkAvailable(getContext())) {
+            user = new AppUser(props);
+            lastNameTV.setText(user.getLast_name());
+            firstNameTV.setText(user.getFirst_name());
+            phoneTV.setText(user.getPhone_number());
+            emailTV.setText(user.getEmail());
+            ImageView userAvatar = userProfileView.findViewById(R.id.avatarImageView);
+            SerializingFunctions.loadAvatar(userAvatar, new File(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE));
+        }
+        else {
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
 
-    private void deserializeAvatar() {
-        ImageView userAvatar = userProfileView.findViewById(R.id.avatarImageView);
-        SerializingFunctions.loadAvatar(userAvatar, new File(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE));
+            Query query = reference.child(getString(R.string.dbnode_users))
+                    .orderByKey()
+                    .equalTo(FirebaseAuth.getInstance().getCurrentUser().getUid());
+
+            query.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot singleSnapshot : dataSnapshot.getChildren()){
+                        AppUser user = singleSnapshot.getValue(AppUser.class);
+                        lastNameTV.setText(user.getLast_name());
+                        firstNameTV.setText(user.getFirst_name());
+                        phoneTV.setText(user.getPhone_number());
+                        emailTV.setText(user.getEmail());
+
+                        ImageView userAvatar = userProfileView.findViewById(R.id.avatarImageView);
+
+                        //try from local
+                        if (!SerializingFunctions.loadAvatar(userAvatar, new File(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE))) {
+                            GlideApp.with(getActivity())
+                                    .load(user.getProfile_image())
+                                    .into(userAvatar);
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Log.e("DatabaseError", databaseError.getMessage().toString());
+                }
+            });
+        }
     }
 
     private boolean hasPermissions(){
