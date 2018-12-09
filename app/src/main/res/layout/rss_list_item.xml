@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginBottom="5dp">
+
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:rowCount="2"
+            android:columnCount="2">
+
+
+
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="match_parent"
+                android:layout_height="208dp"
+                android:layout_column="0"
+                android:layout_columnSpan="2"
+                android:layout_row="0"
+                app:srcCompat="@drawable/agent" />
+
+            <TextView android:text="@string/ololo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_row="1"
+                android:layout_column="0"/>
+
+            <Button
+                android:id="@+id/button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:text="Button"
+                android:layout_row="1"
+                android:layout_column="1" />
+
+        </GridLayout>
+    </androidx.cardview.widget.CardView>
+
+
+    <!--<EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="hui"/>-->
+</FrameLayout>
