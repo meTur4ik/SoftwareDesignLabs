@@ -44,12 +44,12 @@ import glide.GlideApp;
 import instances.AppUser;
 
 import static functions.SerializingFunctions.setWorkingDirectory;
+import static instances.UserConstants.SERIALIZING_DIRECTORY;
+import static instances.UserConstants.USER_AVATAR_FILE;
 
 public class UserProfileFragment extends Fragment {
     private static final int PERMISSION_REQUEST_CODE = 228;
-    public static final String SERIALIZING_DIRECTORY = "/storage/emulated/0/.Labs";
-    public static final String USER_SETTINGS_FILE = "user_settings.properties";
-    public static final String USER_AVATAR_FILE = "avatar.jpeg";
+
 
     private AppUser user;
     private View userProfileView;

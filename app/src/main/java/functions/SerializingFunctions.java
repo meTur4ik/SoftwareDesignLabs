@@ -34,10 +34,13 @@ import androidx.navigation.fragment.NavHostFragment;
 import glide.GlideApp;
 import layout.UserProfileFragment;
 
+import static instances.UserConstants.SERIALIZING_DIRECTORY;
+import static instances.UserConstants.USER_SETTINGS_FILE;
+
 public abstract class SerializingFunctions {
-    private static final String SERIALIZING_DIRECTORY = UserProfileFragment.SERIALIZING_DIRECTORY;
+    /*private static final String SERIALIZING_DIRECTORY = UserProfileFragmen.SERIALIZING_DIRECTORY;
     private static final String USER_SETTINGS_FILE = UserProfileFragment.USER_SETTINGS_FILE;
-    private static final String USER_AVATAR_FILE = UserProfileFragment.USER_AVATAR_FILE;
+    private static final String USER_AVATAR_FILE = UserProfileFragment.USER_AVATAR_FILE;*/
 
     public interface SaveListener {
         void onBeforeSave();

@@ -23,6 +23,7 @@ import functions.MyNavigationUISetup;
 import functions.SerializingFunctions;
 import functions.Utility;
 import instances.AppUser;
+import instances.UserConstants;
 
 import android.os.Parcelable;
 import android.provider.MediaStore;
@@ -35,6 +36,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.asus_user.labs.MainActivity;
 import com.example.asus_user.labs.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -65,9 +67,9 @@ public class EditUserProfileFragment extends Fragment {
     private static final int REQUEST_TAKE_PHOTO = 230;
 
     private static final int PERMISSION_REQUEST_CODE = 228;
-    private static final String SERIALIZING_DIRECTORY = UserProfileFragment.SERIALIZING_DIRECTORY;
-    private static final String USER_SETTINGS_FILE = UserProfileFragment.USER_SETTINGS_FILE;
-    private static final String USER_AVATAR_FILE = UserProfileFragment.USER_AVATAR_FILE;
+    private static final String SERIALIZING_DIRECTORY = UserConstants.SERIALIZING_DIRECTORY;
+    private static final String USER_SETTINGS_FILE = UserConstants.USER_SETTINGS_FILE;
+    private static final String USER_AVATAR_FILE = UserConstants.USER_AVATAR_FILE;
 
     private AppUser user;
     private View editUserProfileView;
@@ -105,6 +107,7 @@ public class EditUserProfileFragment extends Fragment {
 
                 ImageView avatar = editUserProfileView.findViewById(R.id.avatarEditImageView);
                 avatar.setImageURI(imageUri);
+                avatar.setTag("changed");
                 //serializeAvatar();
                 break;
             }
@@ -134,6 +137,14 @@ public class EditUserProfileFragment extends Fragment {
                 ((BitmapDrawable)avatarImageView.getDrawable()).getBitmap()
         );
 
+        if(!avatarImageView.getTag().equals("changed")) {
+            NavController controller = ((NavHostFragment) getActivity().getSupportFragmentManager()
+                    .findFragmentById(R.id.nav_host_fragment))
+                    .getNavController();
+
+            controller.navigate(R.id.userProfile);
+            return;
+        }
         final ProgressDialog pd = new ProgressDialog(getActivity());
         pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         pd.setMessage("Saving photo");
@@ -175,13 +186,20 @@ public class EditUserProfileFragment extends Fragment {
                 .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        pd.dismiss();
-                        //navigate to profile
-                        NavController controller = ((NavHostFragment)(that).getSupportFragmentManager()
-                                .findFragmentById(R.id.nav_host_fragment))
-                                .getNavController();
+                        try {
+                            pd.dismiss();
+                        } catch (IllegalArgumentException e) { }
 
-                        controller.navigate(R.id.userProfile);
+                        //navigate to profile
+                        try {
+                            NavController controller = ((NavHostFragment) (that).getSupportFragmentManager()
+                                    .findFragmentById(R.id.nav_host_fragment))
+                                    .getNavController();
+
+                            controller.navigate(R.id.userProfile);
+                        } catch (NullPointerException e) {}
+
+
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -194,11 +212,13 @@ public class EditUserProfileFragment extends Fragment {
                 reference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                     @Override
                     public void onSuccess(Uri uri) {
-                        FirebaseDatabase.getInstance().getReference()
-                                .child(getString(R.string.dbnode_users))
-                                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                .child(getString(R.string.db_users_field_avatar_path))
-                                .setValue(uri.toString());
+                        try {
+                            FirebaseDatabase.getInstance().getReference()
+                                    .child(getString(R.string.dbnode_users))
+                                    .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                    .child(getString(R.string.db_users_field_avatar_path))
+                                    .setValue(uri.toString());
+                        } catch (IllegalStateException e) { }
                     }
                 });
             }
@@ -256,9 +276,10 @@ public class EditUserProfileFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if(Utility.isNetworkAvailable(getContext())) {
-
-                    serializeUser();
-                    serializeAvatar();
+                    try {
+                        serializeUser();
+                        serializeAvatar();
+                    } catch (IllegalStateException e) {}
 
                 }
                 else {
@@ -310,10 +331,12 @@ public class EditUserProfileFragment extends Fragment {
                             usr.setLast_name(lastNameEditText.getText().toString());
                             usr.setPhone_number(phoneEditText.getText().toString());
 
-                            FirebaseDatabase.getInstance().getReference()
-                                    .child(getString(R.string.dbnode_users))
-                                    .child(fbUser.getUid())
-                                    .setValue(usr);
+                            try {
+                                FirebaseDatabase.getInstance().getReference()
+                                        .child(getString(R.string.dbnode_users))
+                                        .child(fbUser.getUid())
+                                        .setValue(usr);
+                            } catch (IllegalStateException e) {}
                         }
                     });
         }

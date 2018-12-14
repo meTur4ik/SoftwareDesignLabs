@@ -52,4 +52,12 @@
         tools:layout="@layout/fragment_registration">
 
     </fragment>
+
+    <fragment
+        android:id="@+id/rssFragment"
+        android:name="layout.WebPreviewFragment"
+        android:label="fragment_web_preview"
+        tools:layout="@layout/fragment_web_preview">
+
+    </fragment>
 </navigation>
