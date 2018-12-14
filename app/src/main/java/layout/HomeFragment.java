@@ -10,6 +10,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import functions.Utility;
 import instances.UserConstants;
 import rss.RssNote;
 import rss.RssRecycleViewAdapter;
@@ -26,7 +27,13 @@ import org.xml.sax.Parser;
 import com.example.asus_user.labs.MainActivity;
 import com.example.asus_user.labs.R;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -34,11 +41,19 @@ import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import static instances.UserConstants.SERIALIZING_DIRECTORY;
+import static instances.UserConstants.USER_RSS_FILE;
 
 
 public class HomeFragment extends Fragment {
 
     private View homeFragmentView;
+    private RecyclerView home;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -46,19 +61,32 @@ public class HomeFragment extends Fragment {
         // Inflate the layout for this fragment
         homeFragmentView = inflater.inflate(R.layout.fragment_home, container, false);
 
-        new DownloadRSS("https://www.onliner.by/feed")
-                .addOnDownloadListener(new DownloadRSS.onDownloadedListener() {
-                    @Override
-                    public void onPostExecute(Document rss) {
-                        RecyclerView home = homeFragmentView.findViewById(R.id.home_recycler_view);
-                        home.setLayoutManager(new LinearLayoutManager(getContext()));
-                        List<RssNote> rssNotes;
-                        rssNotes = ProcessXml(rss);
-                        home.setAdapter(new RssRecycleViewAdapter((MainActivity) getActivity(), rssNotes));
-                    }
-                }).execute();
-
         return homeFragmentView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(Utility.isNetworkAvailable(getActivity())) {
+            new DownloadRSS("https://www.onliner.by/feed")
+                    .addOnDownloadListener(new DownloadRSS.onDownloadedListener() {
+                        @Override
+                        public void onPostExecute(Document rss) {
+                            home = homeFragmentView.findViewById(R.id.home_recycler_view);
+                            home.setLayoutManager(new LinearLayoutManager(getContext()));
+                            List<RssNote> rssNotes;
+                            rssNotes = ProcessXml(rss);
+                            home.setAdapter(new RssRecycleViewAdapter((MainActivity) getActivity(), rssNotes));
+                        }
+                    }).execute();
+        }
+        else {
+            List<RssNote> rssNotes = ProcessXml(GetData());
+
+            home = homeFragmentView.findViewById(R.id.home_recycler_view);
+            home.setLayoutManager(new LinearLayoutManager(getContext()));
+            home.setAdapter(new RssRecycleViewAdapter((MainActivity) getActivity(), rssNotes));
+        }
     }
 
     public static class DownloadRSS extends AsyncTask<Void, Void, Document>{
@@ -94,9 +122,18 @@ public class HomeFragment extends Fragment {
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
                 InputStream inputStream = connection.getInputStream();
+
                 DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder builder = builderFactory.newDocumentBuilder();
                 Document xmlDoc = builder.parse(inputStream);
+
+                DOMSource source = new DOMSource(xmlDoc);
+                FileWriter writer = new FileWriter(new File(SERIALIZING_DIRECTORY + "/" + USER_RSS_FILE));
+                StreamResult result = new StreamResult(writer);
+
+                TransformerFactory transformerFactory = TransformerFactory.newInstance();
+                Transformer transformer = transformerFactory.newTransformer();
+                transformer.transform(source, result);
                 return xmlDoc;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -105,13 +142,35 @@ public class HomeFragment extends Fragment {
         }
     }
 
+    public Document GetData(){
+        File file = new File(SERIALIZING_DIRECTORY + "/" + USER_RSS_FILE);
+        try {
+            InputStream inputStream = new FileInputStream(file);
+            DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = builderFactory.newDocumentBuilder();
+            Document xmlDoc = builder.parse(inputStream);
+
+            return xmlDoc;
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     private String[] ProcessHtml(String html){
         org.jsoup.nodes.Document document = Jsoup.parse(html);
         org.jsoup.nodes.Element link = document.select("a").first();
         org.jsoup.nodes.Element image = document.select("img").first();
-        String linkImage = image.attr("src"); // A(|)blrEHHA
-        String linkSource = link.attr("href");
-        String description = document.body().text();
+        String linkImage = null;
+        if (image != null)
+            linkImage = image.attr("src"); // A(|)blrEHHA
+        String linkSource = null;
+        if (link != null)
+            linkSource = link.attr("href");
+        String description = null;
+        if(document != null)
+            description = document.body().text();
         return new String[] {description, linkImage, linkSource};
     }
 

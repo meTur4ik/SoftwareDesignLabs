@@ -2,6 +2,8 @@ package rss;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,6 +39,7 @@ public class RssRecycleViewAdapter extends Adapter<RssRecycleViewAdapter.RssView
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    /*
                     Bundle bundle = new Bundle();
                     String myMessage = "https://vk.com";
                     bundle.putString("message", myMessage );
@@ -46,7 +49,7 @@ public class RssRecycleViewAdapter extends Adapter<RssRecycleViewAdapter.RssView
                     FragmentTransaction transaction = context.getSupportFragmentManager().beginTransaction();
                     transaction.replace(R.id.nav_host_fragment, fragInfo);
                     transaction.addToBackStack(null);
-                    transaction.commit();
+                    transaction.commit();*/
 
                     /*NavController controller = ((NavHostFragment) context.getSupportFragmentManager()
                             .findFragmentById(R.id.nav_host_fragment))
@@ -86,6 +89,13 @@ public class RssRecycleViewAdapter extends Adapter<RssRecycleViewAdapter.RssView
                 .load(note.getImageUri())
                 .override(1280, 800)
                 .into(holder.image);
+        try {
+            Bitmap bm = ((BitmapDrawable) holder.image.getDrawable()).getBitmap();
+        }
+        catch (NullPointerException e){
+            holder.image.setImageResource(R.drawable.noimage);
+        }
+        //holder.image.setImageResource(R.drawable.noimage);
     }
 
     @Override

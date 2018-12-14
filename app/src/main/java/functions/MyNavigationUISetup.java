@@ -11,6 +11,7 @@ import android.view.ViewParent;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
+import com.example.asus_user.labs.MainActivity;
 import com.example.asus_user.labs.R;
 import com.google.android.material.navigation.NavigationView;
 
@@ -40,6 +41,11 @@ public class MyNavigationUISetup {
                 else {
                     Toast.makeText(navigationView.getContext(), "ain't allowed to do this now", Toast.LENGTH_LONG).show();
                 }
+
+                /*try {
+                    ((MainActivity) navigationView.getContext()).getSupportFragmentManager().beginTransaction().
+                            remove(((MainActivity) navigationView.getContext()).getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment)).commit();
+                } catch (Exception e) {}*/
 
                 return handled;
             }
