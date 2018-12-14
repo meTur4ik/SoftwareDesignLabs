@@ -7,6 +7,9 @@ import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import rss.RssRecycleViewAdapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +28,11 @@ public class HomeFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         homeFragmentView = inflater.inflate(R.layout.fragment_home, container, false);
+
+        RecyclerView home = homeFragmentView.findViewById(R.id.home_recycler_view);
+        home.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        //home.setAdapter(new RssRecycleViewAdapter(getContext(), Datamana));
 
         return homeFragmentView;
     }
