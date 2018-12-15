@@ -303,10 +303,12 @@ public class EditUserProfileFragment extends Fragment {
         EditText firstNameEditText = editUserProfileView.findViewById(R.id.firstNameEditText);
         EditText phoneEditText = editUserProfileView.findViewById(R.id.phoneEditText);
         EditText emailEditText = editUserProfileView.findViewById(R.id.emailEditText);
+        EditText rssAddressEditText = editUserProfileView.findViewById(R.id.rssAddressEditText);
         lastNameEditText.setText(user.getLast_name());
         firstNameEditText.setText(user.getFirst_name());
         phoneEditText.setText(user.getPhone_number());
         emailEditText.setText(user.getEmail());
+        rssAddressEditText.setText(user.getRss_address());
     }
 
     private void serializeUser() {
@@ -318,6 +320,7 @@ public class EditUserProfileFragment extends Fragment {
         final EditText firstNameEditText = editUserProfileView.findViewById(R.id.firstNameEditText);
         final EditText phoneEditText = editUserProfileView.findViewById(R.id.phoneEditText);
         final EditText emailEditText = editUserProfileView.findViewById(R.id.emailEditText);
+        final EditText rssAddressText = editUserProfileView.findViewById(R.id.rssAddressEditText);
         final FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (fbUser != null){
@@ -330,6 +333,7 @@ public class EditUserProfileFragment extends Fragment {
                             usr.setFirst_name(firstNameEditText.getText().toString());
                             usr.setLast_name(lastNameEditText.getText().toString());
                             usr.setPhone_number(phoneEditText.getText().toString());
+                            usr.setRss_address(rssAddressText.getText().toString());
 
                             try {
                                 FirebaseDatabase.getInstance().getReference()
@@ -360,6 +364,7 @@ public class EditUserProfileFragment extends Fragment {
             user.setLast_name(lastNameEditText.getText().toString());
             user.setPhone_number(phoneEditText.getText().toString());
             user.setEmail(emailEditText.getText().toString());
+            user.setRss_address(rssAddressText.getText().toString());
 
             Properties props = user.toProperties();
 

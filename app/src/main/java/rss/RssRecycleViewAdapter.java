@@ -84,17 +84,12 @@ public class RssRecycleViewAdapter extends Adapter<RssRecycleViewAdapter.RssView
         RssNote note = notes.get(position);
         holder.title.setText(note.getTitle());
         holder.description.setText(note.getDescription());
-        GlideApp.with(holder.itemView.getContext())
-                .asBitmap()
-                .load(note.getImageUri())
-                .override(1280, 800)
-                .into(holder.image);
-        try {
-            Bitmap bm = ((BitmapDrawable) holder.image.getDrawable()).getBitmap();
+        if(note.getImageUri() != null) {
+            GlideApp.with(holder.itemView.getContext())
+                    .load(note.getImageUri())
+                    .into(holder.image);
         }
-        catch (NullPointerException e){
-            holder.image.setImageResource(R.drawable.noimage);
-        }
+
         //holder.image.setImageResource(R.drawable.noimage);
     }
 

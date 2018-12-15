@@ -68,7 +68,7 @@ public class HomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if(Utility.isNetworkAvailable(getActivity())) {
-            new DownloadRSS("https://www.onliner.by/feed")
+            new DownloadRSS("http://static.userland.com/gems/backend/rssTwoExample2.xml")
                     .addOnDownloadListener(new DownloadRSS.onDownloadedListener() {
                         @Override
                         public void onPostExecute(Document rss) {
@@ -175,8 +175,9 @@ public class HomeFragment extends Fragment {
     }
 
     private List<RssNote> ProcessXml(Document data) {
+        List<RssNote> feedItems = new ArrayList<>();
+
         if (data != null) {
-            List<RssNote> feedItems = new ArrayList<>();
             Element root = data.getDocumentElement();
             Node channel = root.getChildNodes().item(1);
             NodeList items = channel.getChildNodes();
@@ -206,9 +207,8 @@ public class HomeFragment extends Fragment {
 
                 }
             }
-            return feedItems;
         }
-        return null;
+        return feedItems;
     }
 
     public String limitString(String str){

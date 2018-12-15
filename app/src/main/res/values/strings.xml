@@ -40,6 +40,7 @@
     <string name="db_users_field_phone">phone</string>
     <string name="db_users_field_avatar_path">profile_image</string>
     <string name="contact_email">contact email</string>
+    <string name="rss_address">rss address</string>
 
 
 </resources>

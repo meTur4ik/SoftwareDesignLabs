@@ -6,6 +6,7 @@ import static instances.UserConstants.EMAIL_STR;
 import static instances.UserConstants.FIRST_NAME_STR;
 import static instances.UserConstants.LAST_NAME_STR;
 import static instances.UserConstants.PHONE_STR;
+import static instances.UserConstants.RSS_ADDRESS_STR;
 
 public class AppUser {
 
@@ -13,6 +14,16 @@ public class AppUser {
     // properties
 
     private String first_name;
+    private String last_name;
+    private String phone_number;
+    private String email;
+    private String id;
+    private String profile_image;
+    private String rss_address;
+
+    public String getRss_address() { return rss_address; }
+
+    public void setRss_address(String rss_address) { this.rss_address = rss_address; }
 
     public String getFirst_name() {
         return first_name;
@@ -58,32 +69,24 @@ public class AppUser {
         return profile_image;
     }
 
-    private String last_name;
-
-    private String phone_number;
-
-    private String email;
-
-    private String id;
-
     public void setProfile_image(String profile_image) {
         this.profile_image = profile_image;
     }
 
-    private String profile_image;
 
     // properties end
 
     public AppUser() {}
 
     public AppUser(String first_name, String last_name, String phone_number, String email,
-                   String id, String profile_image) {
+                   String id, String profile_image, String rss_address) {
         this.first_name = first_name;
         this.last_name = last_name;
         this.phone_number = phone_number;
         this.email = email;
         this.id = id;
         this.profile_image = profile_image;
+        this.rss_address = rss_address;
     }
 
     public AppUser(Properties fileds){
@@ -91,6 +94,7 @@ public class AppUser {
         last_name = fileds.getProperty(LAST_NAME_STR);
         email = fileds.getProperty(EMAIL_STR);
         phone_number = fileds.getProperty(PHONE_STR);
+        rss_address = fileds.getProperty(RSS_ADDRESS_STR);
     }
 
     public Properties toProperties(){
@@ -99,7 +103,7 @@ public class AppUser {
         props.setProperty(LAST_NAME_STR, last_name);
         props.setProperty(PHONE_STR, phone_number);
         props.setProperty(EMAIL_STR, email);
-
+        props.setProperty(RSS_ADDRESS_STR, rss_address);
         return props;
     }
 
@@ -112,6 +116,7 @@ public class AppUser {
                 ", email='" + email + '\'' +
                 ", id='" + id + '\'' +
                 ", profile_image='" + profile_image + '\'' +
+                ", rss_address='" + rss_address + '\'' +
                 '}';
     }
 }
