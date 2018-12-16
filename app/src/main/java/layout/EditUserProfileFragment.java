@@ -22,12 +22,14 @@ import androidx.navigation.fragment.NavHostFragment;
 import functions.MyNavigationUISetup;
 import functions.SerializingFunctions;
 import functions.Utility;
+import glide.GlideApp;
 import instances.AppUser;
 import instances.UserConstants;
 
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,7 +49,12 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -71,7 +78,7 @@ public class EditUserProfileFragment extends Fragment {
     private static final String USER_SETTINGS_FILE = UserConstants.USER_SETTINGS_FILE;
     private static final String USER_AVATAR_FILE = UserConstants.USER_AVATAR_FILE;
 
-    private AppUser user;
+    //private AppUser user;
     private View editUserProfileView;
 
     @Override
@@ -80,12 +87,13 @@ public class EditUserProfileFragment extends Fragment {
         // Inflate the layout for this fragment
         editUserProfileView = inflater.inflate(R.layout.fragment_edit_user_profile, container, false);
 
-        deserializeAvatar();
+
 
         setLoadButtonAction();
         setDoneButtonAction();
         if (hasPermissions()) {
             deserializeUser();
+            deserializeAvatar();
         } else {
             showNoReadExternalStoragePermissionSnackbar();
         }
@@ -103,12 +111,10 @@ public class EditUserProfileFragment extends Fragment {
                     return;
 
                 Uri imageUri = data.getData();
-                //serialize avatar
 
                 ImageView avatar = editUserProfileView.findViewById(R.id.avatarEditImageView);
                 avatar.setImageURI(imageUri);
                 avatar.setTag("changed");
-                //serializeAvatar();
                 break;
             }
             case REQUEST_TAKE_PHOTO: {
@@ -118,112 +124,10 @@ public class EditUserProfileFragment extends Fragment {
 
                 ImageView avatar = editUserProfileView.findViewById(R.id.avatarEditImageView);
                 avatar.setImageBitmap(takenPhoto);
-                //serializeAvatar();
-                //getDialog().dismiss();
                 break;
             }
         }
 
-    }
-
-    private void serializeAvatar(){
-        /*if (!Utility.isNetworkAvailable(getContext())){
-            Toast.makeText(getActivity(), "no network connection", Toast.LENGTH_LONG).show();
-            return;
-        }*/
-
-        ImageView avatarImageView = editUserProfileView.findViewById(R.id.avatarEditImageView);
-        WeakReference<Bitmap> bitmapWeakReference = new WeakReference<Bitmap>(
-                ((BitmapDrawable)avatarImageView.getDrawable()).getBitmap()
-        );
-
-        if(!avatarImageView.getTag().equals("changed")) {
-            NavController controller = ((NavHostFragment) getActivity().getSupportFragmentManager()
-                    .findFragmentById(R.id.nav_host_fragment))
-                    .getNavController();
-
-            controller.navigate(R.id.userProfile);
-            return;
-        }
-        final ProgressDialog pd = new ProgressDialog(getActivity());
-        pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        pd.setMessage("Saving photo");
-        pd.setOwnerActivity(getActivity());
-        pd.setIndeterminate(true);
-        pd.setCancelable(false);
-
-        final FragmentActivity that = this.getActivity();
-
-        new SerializingFunctions.SaveAvatar(bitmapWeakReference,
-                SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE, new SerializingFunctions.SaveListener() {
-            @Override
-            public void onBeforeSave() {
-                pd.show();
-            }
-
-            @Override
-            public void onAfterSave() { }
-
-            @Override
-            public void onError() {
-                Toast.makeText(that, "failed to save image", Toast.LENGTH_LONG).show();
-            }
-        }).execute();
-
-        Bitmap bitmap = ((BitmapDrawable)avatarImageView.getDrawable()).getBitmap();
-        new SerializingFunctions.UploadImageBackground(bitmap, new SerializingFunctions.UploadImageBackground.UploadListener() {
-            @Override
-            public void onPreExecute() {
-                pd.show();
-            }
-
-            @Override
-            public void onPostExecute(byte[] bitmap) {
-                StorageReference reference = FirebaseStorage.getInstance().getReference()
-                        .child("users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/avatar/");
-
-                reference.putBytes(bitmap)
-                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        try {
-                            pd.dismiss();
-                        } catch (IllegalArgumentException e) { }
-
-                        //navigate to profile
-                        try {
-                            NavController controller = ((NavHostFragment) (that).getSupportFragmentManager()
-                                    .findFragmentById(R.id.nav_host_fragment))
-                                    .getNavController();
-
-                            controller.navigate(R.id.userProfile);
-                        } catch (NullPointerException e) {}
-
-
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getContext(), "failed to upload image", Toast.LENGTH_LONG).show();
-                    }
-                });
-
-                reference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        try {
-                            FirebaseDatabase.getInstance().getReference()
-                                    .child(getString(R.string.dbnode_users))
-                                    .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                    .child(getString(R.string.db_users_field_avatar_path))
-                                    .setValue(uri.toString());
-                        } catch (IllegalStateException e) { }
-                    }
-                });
-            }
-        })
-        .execute();
     }
 
     private void setLoadButtonAction(){
@@ -278,7 +182,6 @@ public class EditUserProfileFragment extends Fragment {
                 if(Utility.isNetworkAvailable(getContext())) {
                     try {
                         serializeUser();
-                        serializeAvatar();
                     } catch (IllegalStateException e) {}
 
                 }
@@ -291,14 +194,47 @@ public class EditUserProfileFragment extends Fragment {
     }
 
     private void deserializeAvatar() {
-        ImageView avatarEditView = editUserProfileView.findViewById(R.id.avatarEditImageView);
-        SerializingFunctions.loadAvatar(avatarEditView,
-                new File(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE));
+        final ImageView avatarEditView = editUserProfileView.findViewById(R.id.avatarEditImageView);
+        /*if(Utility.isNetworkAvailable(getContext())) {
+            //String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            //FirebaseDatabase.getInstance().getReference().
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+            Query query = reference.child(getString(R.string.dbnode_users))
+                    .orderByKey()
+                    .equalTo(FirebaseAuth.getInstance().getCurrentUser().getUid());
+
+            query.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    AppUser user = new AppUser();
+                    for (DataSnapshot singleSnapshot : dataSnapshot.getChildren()) {
+                        user = singleSnapshot.getValue(AppUser.class);
+                    }
+
+
+                    Log.i("FIREBASE_IMAGE", user.toString());
+                    GlideApp.with(getActivity())
+                            .load(user.getProfile_image())
+                            .into(avatarEditView);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+        }
+        else*/
+        {
+            SerializingFunctions.loadAvatar(avatarEditView,
+                    new File(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE));
+        }
     }
 
     private void deserializeUser() {
         Properties props = SerializingFunctions.deserializeUser();
-        user = new AppUser(props);
+        AppUser user = new AppUser(props);
+        Log.i("USER", user.toString());
         EditText lastNameEditText = editUserProfileView.findViewById(R.id.lastNameEditText);
         EditText firstNameEditText = editUserProfileView.findViewById(R.id.firstNameEditText);
         EditText phoneEditText = editUserProfileView.findViewById(R.id.phoneEditText);
@@ -312,74 +248,137 @@ public class EditUserProfileFragment extends Fragment {
     }
 
     private void serializeUser() {
-        if (!Utility.isNetworkAvailable(getContext())){
-            return;
-        }
+
+        ImageView avatarImageView = editUserProfileView.findViewById(R.id.avatarEditImageView);
 
         final EditText lastNameEditText = editUserProfileView.findViewById(R.id.lastNameEditText);
         final EditText firstNameEditText = editUserProfileView.findViewById(R.id.firstNameEditText);
         final EditText phoneEditText = editUserProfileView.findViewById(R.id.phoneEditText);
         final EditText emailEditText = editUserProfileView.findViewById(R.id.emailEditText);
         final EditText rssAddressText = editUserProfileView.findViewById(R.id.rssAddressEditText);
-        final FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
+        final String[] imageUri = new String[1]; //CYKA KURWA FINAL JAVA
 
-        if (fbUser != null){
-            fbUser.updateEmail(emailEditText.getText().toString())
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+        WeakReference<Bitmap> bitmapWeakReference = new WeakReference<Bitmap>(
+                ((BitmapDrawable)avatarImageView.getDrawable()).getBitmap()
+        );
+
+        if(!avatarImageView.getTag().toString().equals("changed")) {
+            //Log.i("TAG", avatarImageView.getTag().toString());
+            AppUser usr = new AppUser(SerializingFunctions.deserializeUser());
+            usr.setLast_name(lastNameEditText.getText().toString());
+            usr.setFirst_name(firstNameEditText.getText().toString());
+            usr.setPhone_number(phoneEditText.getText().toString());
+            usr.setEmail(emailEditText.getText().toString());
+            usr.setRss_address(rssAddressText.getText().toString());
+            usr.setId(FirebaseAuth.getInstance().getCurrentUser().getUid());
+            SerializingFunctions.serializeUserFields(usr,this);
+
+        } else {
+            final ProgressDialog pd = new ProgressDialog(getActivity());
+            pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            pd.setMessage("Saving photo");
+            pd.setOwnerActivity(getActivity());
+            pd.setIndeterminate(true);
+            pd.setCancelable(false);
+
+            final FragmentActivity thatActivity = this.getActivity();
+            final Fragment that = this;
+
+            new SerializingFunctions.SaveAvatar(bitmapWeakReference,
+                    SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE, new SerializingFunctions.SaveListener() {
+                @Override
+                public void onBeforeSave() {
+                    pd.show();
+                }
+
+                @Override
+                public void onAfterSave() {
+                }
+
+                @Override
+                public void onError() {
+                    Toast.makeText(thatActivity, "failed to save image", Toast.LENGTH_LONG).show();
+                }
+            }).execute();
+
+            Bitmap bitmap = ((BitmapDrawable) avatarImageView.getDrawable()).getBitmap();
+            new SerializingFunctions.UploadImageBackground(bitmap, new SerializingFunctions.UploadImageBackground.UploadListener() {
+                @Override
+                public void onPreExecute() {
+                    pd.show();
+                }
+
+                @Override
+                public void onPostExecute(byte[] bitmap) {
+                    StorageReference reference = FirebaseStorage.getInstance().getReference()
+                            .child("users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/avatar/");
+
+                    reference.putBytes(bitmap)
+                            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                    try {
+                                        pd.dismiss();
+                                    } catch (IllegalArgumentException e) {
+                                    }
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(getContext(), "failed to upload image", Toast.LENGTH_LONG).show();
+                                }
+                            });
+
+                    reference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
-                        public void onComplete(@NonNull Task<Void> task) {
+                        public void onSuccess(Uri uri) {
                             AppUser usr = new AppUser();
                             usr.setEmail(emailEditText.getText().toString());
                             usr.setFirst_name(firstNameEditText.getText().toString());
                             usr.setLast_name(lastNameEditText.getText().toString());
                             usr.setPhone_number(phoneEditText.getText().toString());
                             usr.setRss_address(rssAddressText.getText().toString());
+                            usr.setProfile_image(uri.toString());
+                            usr.setId(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                            SerializingFunctions.serializeUserFields(usr, that);
 
                             try {
-                                FirebaseDatabase.getInstance().getReference()
-                                        .child(getString(R.string.dbnode_users))
-                                        .child(fbUser.getUid())
-                                        .setValue(usr);
-                            } catch (IllegalStateException e) {}
+                                NavController controller = ((NavHostFragment) (thatActivity).getSupportFragmentManager()
+                                        .findFragmentById(R.id.nav_host_fragment))
+                                        .getNavController();
+
+                                controller.navigate(R.id.userProfile);
+                            } catch (NullPointerException e) {
+                            }
                         }
                     });
+                }
+            }).execute();
         }
 
 
 
 
-        SerializingFunctions.setWorkingDirectory();
-        try {
-            new File(SERIALIZING_DIRECTORY + "/" + USER_SETTINGS_FILE).createNewFile();
-        } catch (IOException e) {
-            Toast.makeText(getActivity(), "failed to create property file",
-                    Toast.LENGTH_LONG).show();
-        }
 
-        OutputStream outputFile = null;
-        try {
-            outputFile = new FileOutputStream(SERIALIZING_DIRECTORY + "/" + USER_SETTINGS_FILE);
 
-            user.setFirst_name(firstNameEditText.getText().toString());
-            user.setLast_name(lastNameEditText.getText().toString());
-            user.setPhone_number(phoneEditText.getText().toString());
-            user.setEmail(emailEditText.getText().toString());
-            user.setRss_address(rssAddressText.getText().toString());
 
-            Properties props = user.toProperties();
 
-            props.store(outputFile, null);
-        } catch (IOException e) {
-            Toast.makeText(getActivity(), "no property file found", Toast.LENGTH_LONG).show();
-        } finally {
-            try {
-                if(outputFile != null)
-                    outputFile.close();
-            } catch (IOException e) {
-                Toast.makeText(getActivity(), "failed to save property file",
-                        Toast.LENGTH_LONG).show();
-            }
-        }
+
+
+
+
+
+
+        // USER DATA
+
+
+
+        NavController controller = ((NavHostFragment) getActivity().getSupportFragmentManager()
+                .findFragmentById(R.id.nav_host_fragment))
+                .getNavController();
+
+        controller.navigate(R.id.userProfile);
     }
 
     private void showNoReadExternalStoragePermissionSnackbar(){

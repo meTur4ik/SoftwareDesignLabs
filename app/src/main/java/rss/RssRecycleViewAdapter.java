@@ -39,33 +39,17 @@ public class RssRecycleViewAdapter extends Adapter<RssRecycleViewAdapter.RssView
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    /*
-                    Bundle bundle = new Bundle();
-                    String myMessage = "https://vk.com";
-                    bundle.putString("message", myMessage );
-                    WebPreviewFragment fragInfo = new WebPreviewFragment();
-                    fragInfo.setArguments(bundle);
 
-                    FragmentTransaction transaction = context.getSupportFragmentManager().beginTransaction();
-                    transaction.replace(R.id.nav_host_fragment, fragInfo);
-                    transaction.addToBackStack(null);
-                    transaction.commit();*/
-
-                    /*NavController controller = ((NavHostFragment) context.getSupportFragmentManager()
-                            .findFragmentById(R.id.nav_host_fragment))
-                            .getNavController();
-
-                    controller.navigate(R.id.rssFragment);*/
                 }
             });
         }
     }
 
-    private MainActivity context;
+    private Context context;
     private LayoutInflater layoutInflater;
     private List<RssNote> notes;
 
-    public RssRecycleViewAdapter(MainActivity context, List<RssNote> notes) {
+    public RssRecycleViewAdapter(Context context, List<RssNote> notes) {
         this.context = context;
         layoutInflater = LayoutInflater.from(context);
         this.notes = notes;

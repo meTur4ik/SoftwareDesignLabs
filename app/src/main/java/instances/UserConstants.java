@@ -5,7 +5,9 @@ public class UserConstants {
     public static final String LAST_NAME_STR = "last_name";
     public static final String EMAIL_STR = "email";
     public static final String PHONE_STR = "phone";
+    public static final String PROFILE_IMAGE_STR = "profile_image";
     public static final String RSS_ADDRESS_STR = "rss_address";
+    public static final String ID_STR = "id";
 
     public static final String SERIALIZING_DIRECTORY = "/storage/emulated/0/.Labs";
     public static final String USER_SETTINGS_FILE = "user_settings.properties";

@@ -95,15 +95,14 @@ public class UserProfileFragment extends Fragment {
         final TextView firstNameTV = userProfileView.findViewById(R.id.firstNameTextView);
         final TextView phoneTV = userProfileView.findViewById(R.id.phoneTextView);
         final TextView emailTV = userProfileView.findViewById(R.id.emailTextView);
-        if(!Utility.isNetworkAvailable(getContext())) {
-            user = new AppUser(props);
-            lastNameTV.setText(user.getLast_name());
-            firstNameTV.setText(user.getFirst_name());
-            phoneTV.setText(user.getPhone_number());
-            emailTV.setText(user.getEmail());
-            ImageView userAvatar = userProfileView.findViewById(R.id.avatarImageView);
-            SerializingFunctions.loadAvatar(userAvatar, new File(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE));
-        }
+        user = new AppUser(props);
+        lastNameTV.setText(user.getLast_name());
+        firstNameTV.setText(user.getFirst_name());
+        phoneTV.setText(user.getPhone_number());
+        emailTV.setText(user.getEmail());
+        ImageView userAvatar = userProfileView.findViewById(R.id.avatarImageView);
+        SerializingFunctions.loadAvatar(userAvatar, new File(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE));
+        /*
         else {
             DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
 
@@ -137,7 +136,7 @@ public class UserProfileFragment extends Fragment {
                     Log.e("DatabaseError", databaseError.getMessage().toString());
                 }
             });
-        }
+        }*/
     }
 
     private boolean hasPermissions(){

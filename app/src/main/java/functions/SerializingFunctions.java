@@ -15,6 +15,11 @@ import android.widget.Toast;
 
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.asus_user.labs.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -23,15 +28,19 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.navigation.fragment.NavHostFragment;
 import glide.GlideApp;
+import instances.AppUser;
 import layout.UserProfileFragment;
 
 import static instances.UserConstants.SERIALIZING_DIRECTORY;
@@ -163,5 +172,61 @@ public abstract class SerializingFunctions {
                 .override(1280, 800)
                 .into(targetView);
         return true;
+    }
+
+    public static void serializeUserFields(final AppUser user, final Fragment fr){
+        /*if (!Utility.isNetworkAvailable(getContext())){
+            Toast.makeText(getActivity(), "no network connection", Toast.LENGTH_LONG).show();
+            return;
+        }*/
+        if (!Utility.isNetworkAvailable(fr.getContext())){
+
+        }
+        else {
+            final FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (fbUser != null) {
+                fbUser.updateEmail(user.getEmail())
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                try {
+                                    FirebaseDatabase.getInstance().getReference()
+                                            .child(fr.getContext().getString(R.string.dbnode_users))
+                                            .child(fbUser.getUid())
+                                            .setValue(user);
+                                } catch (IllegalStateException e) {
+                                }
+                            }
+                        });
+            }
+
+
+            SerializingFunctions.setWorkingDirectory();
+            try {
+                new File(SERIALIZING_DIRECTORY + "/" + USER_SETTINGS_FILE).createNewFile();
+            } catch (IOException e) {
+                Toast.makeText(fr.getActivity(), "failed to create property file",
+                        Toast.LENGTH_LONG).show();
+            }
+
+            OutputStream outputFile = null;
+            try {
+                outputFile = new FileOutputStream(SERIALIZING_DIRECTORY + "/" + USER_SETTINGS_FILE);
+
+                Properties props = user.toProperties();
+
+                props.store(outputFile, null);
+            } catch (IOException e) {
+                Toast.makeText(fr.getActivity(), "no property file found", Toast.LENGTH_LONG).show();
+            } finally {
+                try {
+                    if (outputFile != null)
+                        outputFile.close();
+                } catch (IOException e) {
+                    Toast.makeText(fr.getActivity(), "failed to save property file",
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+        }
     }
 }

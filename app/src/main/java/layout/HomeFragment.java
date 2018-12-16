@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -87,6 +88,12 @@ public class HomeFragment extends Fragment {
             home.setLayoutManager(new LinearLayoutManager(getContext()));
             home.setAdapter(new RssRecycleViewAdapter((MainActivity) getActivity(), rssNotes));
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        //outState.putSerializable(home);
     }
 
     public static class DownloadRSS extends AsyncTask<Void, Void, Document>{

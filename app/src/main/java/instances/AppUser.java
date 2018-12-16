@@ -4,8 +4,10 @@ import java.util.Properties;
 
 import static instances.UserConstants.EMAIL_STR;
 import static instances.UserConstants.FIRST_NAME_STR;
+import static instances.UserConstants.ID_STR;
 import static instances.UserConstants.LAST_NAME_STR;
 import static instances.UserConstants.PHONE_STR;
+import static instances.UserConstants.PROFILE_IMAGE_STR;
 import static instances.UserConstants.RSS_ADDRESS_STR;
 
 public class AppUser {
@@ -13,13 +15,13 @@ public class AppUser {
 
     // properties
 
-    private String first_name;
-    private String last_name;
-    private String phone_number;
-    private String email;
-    private String id;
-    private String profile_image;
-    private String rss_address;
+    private String first_name = "";
+    private String last_name = "";
+    private String phone_number = "";
+    private String email = "";
+    private String id = "";
+    private String profile_image = "";
+    private String rss_address = "";
 
     public String getRss_address() { return rss_address; }
 
@@ -95,6 +97,8 @@ public class AppUser {
         email = fileds.getProperty(EMAIL_STR);
         phone_number = fileds.getProperty(PHONE_STR);
         rss_address = fileds.getProperty(RSS_ADDRESS_STR);
+        profile_image = fileds.getProperty(PROFILE_IMAGE_STR);
+        id = fileds.getProperty(ID_STR);
     }
 
     public Properties toProperties(){
@@ -104,6 +108,8 @@ public class AppUser {
         props.setProperty(PHONE_STR, phone_number);
         props.setProperty(EMAIL_STR, email);
         props.setProperty(RSS_ADDRESS_STR, rss_address);
+        props.setProperty(PROFILE_IMAGE_STR, profile_image);
+        props.setProperty(ID_STR, id);
         return props;
     }
 
