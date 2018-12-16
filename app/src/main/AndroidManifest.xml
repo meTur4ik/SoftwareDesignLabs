@@ -32,7 +32,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
 
-            <nav-graph android:value="@navigation/navigation_graph"/>
+            <!-- <nav-graph android:value="@navigation/navigation_graph"/> -->
         </activity>
         <activity android:name=".AuthActivity">
             <intent-filter>
@@ -40,8 +40,8 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
+        <activity android:name=".WebViewActivity"></activity>
     </application>
 
 </manifest>
