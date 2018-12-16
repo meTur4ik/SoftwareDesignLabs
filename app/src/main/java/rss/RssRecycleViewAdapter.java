@@ -55,7 +55,6 @@ public class RssRecycleViewAdapter extends Adapter<RssRecycleViewAdapter.RssView
         this.notes = notes;
     }
 
-
     @NonNull
     @Override
     public RssViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
