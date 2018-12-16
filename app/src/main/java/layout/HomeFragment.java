@@ -1,6 +1,7 @@
 package layout;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import functions.Utility;
@@ -71,16 +73,27 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        final RecyclerView.LayoutManager layoutManager;
+        int deviceOrientation = getResources().getConfiguration().orientation;
+        if (deviceOrientation == Configuration.ORIENTATION_PORTRAIT) {
+            layoutManager = new LinearLayoutManager(getContext());
+        }
+        else {
+            layoutManager = new GridLayoutManager(getContext(), 2);
+        }
+
         if(Utility.isNetworkAvailable(getActivity())) {
             new RssProcessing.DownloadRSS("https://news.tut.by/rss/index.rss")
                     .addOnDownloadListener(new RssProcessing.DownloadRSS.onDownloadedListener() {
                         @Override
                         public void onPostExecute(Document rss) {
                             home = homeFragmentView.findViewById(R.id.home_recycler_view);
-                            home.setLayoutManager(new LinearLayoutManager(getContext()));
+                            home.setLayoutManager(new GridLayoutManager(getContext(), 2));
+                            //home.setLayoutManager(new LinearLayoutManager(getContext()));
+                            home.setLayoutManager(layoutManager);
                             List<RssNote> rssNotes;
                             rssNotes = ProcessXml(rss);
-                            home.setAdapter(new RssRecycleViewAdapter((MainActivity) getActivity(), rssNotes));
+                            home.setAdapter(new RssRecycleViewAdapter(getActivity(), rssNotes));
                         }
                     }).execute();
         }
@@ -88,8 +101,9 @@ public class HomeFragment extends Fragment {
             List<RssNote> rssNotes = ProcessXml(RssProcessing.GetData());
 
             home = homeFragmentView.findViewById(R.id.home_recycler_view);
-            home.setLayoutManager(new LinearLayoutManager(getContext()));
-            home.setAdapter(new RssRecycleViewAdapter((MainActivity) getActivity(), rssNotes));
+            home.setLayoutManager(layoutManager);
+            //home.setLayoutManager(new LinearLayoutManager(getContext()));
+            home.setAdapter(new RssRecycleViewAdapter(getActivity(), rssNotes));
         }
     }
 

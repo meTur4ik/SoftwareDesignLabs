@@ -91,14 +91,14 @@ public class AppUser {
         this.rss_address = rss_address;
     }
 
-    public AppUser(Properties fileds){
-        first_name = fileds.getProperty(FIRST_NAME_STR);
-        last_name = fileds.getProperty(LAST_NAME_STR);
-        email = fileds.getProperty(EMAIL_STR);
-        phone_number = fileds.getProperty(PHONE_STR);
-        rss_address = fileds.getProperty(RSS_ADDRESS_STR);
-        profile_image = fileds.getProperty(PROFILE_IMAGE_STR);
-        id = fileds.getProperty(ID_STR);
+    public AppUser(Properties fields){
+        first_name = fields.getProperty(FIRST_NAME_STR);
+        last_name = fields.getProperty(LAST_NAME_STR);
+        email = fields.getProperty(EMAIL_STR);
+        phone_number = fields.getProperty(PHONE_STR);
+        rss_address = fields.getProperty(RSS_ADDRESS_STR);
+        profile_image = fields.getProperty(PROFILE_IMAGE_STR);
+        id = fields.getProperty(ID_STR);
     }
 
     public Properties toProperties(){

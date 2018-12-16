@@ -160,6 +160,11 @@ public abstract class RssProcessing {
         return new String[] {description, linkImage, linkSource};
     }
 
+    /**
+     * processes XML to rss notes
+     * @param data
+     * @return List<RssNote>
+     */
     public static List<RssNote> ProcessXml(Document data) {
         List<RssNote> feedItems = new ArrayList<>();
 
@@ -168,24 +173,26 @@ public abstract class RssProcessing {
             Node channel = root.getChildNodes().item(1);
             NodeList items = channel.getChildNodes();
             for (int i = 0; i < items.getLength(); i++) {
-                Node cureentchild = items.item(i);
-                if (cureentchild.getNodeName().equalsIgnoreCase("item")) {
+                Node currentchild = items.item(i);
+                if (currentchild.getNodeName().equalsIgnoreCase("item")) {
                     RssNote item = new RssNote();
-                    NodeList itemchilds = cureentchild.getChildNodes();
+                    NodeList itemchilds = currentchild.getChildNodes();
                     for (int j = 0; j < itemchilds.getLength(); j++) {
-                        Node cureent = itemchilds.item(j);
-                        if (cureent.getNodeName().equalsIgnoreCase("title")) {
-                            item.setTitle(cureent.getTextContent());
-                        } else if (cureent.getNodeName().equalsIgnoreCase("description")) {
-                            String[] strings = ProcessHtml(cureent.getTextContent());
-                            //item.setDescription(cureent.getTextContent());
+                        Node current = itemchilds.item(j);
+                        if (current.getNodeName().equalsIgnoreCase("title")) {
+                            item.setTitle(current.getTextContent());
+                        } else if (current.getNodeName().equalsIgnoreCase("description")) {
+                            String[] strings = ProcessHtml(current.getTextContent());
                             item.setDescription(limitString(strings[0]));
                             item.setImageUri(strings[1]);
                             item.setLink(strings[2]);
-                        } else if (cureent.getNodeName().equalsIgnoreCase("image")) {
-                            item.setImageUri(cureent.getTextContent());
-                        } else if (cureent.getNodeName().equalsIgnoreCase("link")) {
-                            item.setLink(cureent.getTextContent());
+                        } else if (current.getNodeName().equalsIgnoreCase("image")) {
+                            item.setImageUri(current.getTextContent());
+                        } else if (current.getNodeName().equalsIgnoreCase("link")) {
+                            item.setLink(current.getTextContent());
+                        } else if (current.getNodeName().equalsIgnoreCase("media:content")
+                                || current.getNodeName().equalsIgnoreCase("media:thumbnail")) {
+                            item.setImageUri(current.getAttributes().getNamedItem("url").getNodeValue());
                         }
                     }
                     feedItems.add(item);
