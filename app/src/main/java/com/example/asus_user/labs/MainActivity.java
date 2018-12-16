@@ -16,6 +16,8 @@ import android.widget.Toast;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,6 +37,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import functions.MyNavigationUISetup;
+import instances.UserConstants;
 
 // user, async tasks -> futures, кнопка на тулбаре, label'ы
 //glide images
@@ -173,7 +176,9 @@ public class MainActivity extends AppCompatActivity
             case R.id.log_out_toolbar_button:
                 FirebaseAuth.getInstance().signOut();
                 startActivity(new Intent(MainActivity.this, AuthActivity.class));
-
+                try {
+                    FileUtils.cleanDirectory(new File(UserConstants.SERIALIZING_DIRECTORY));
+                } catch (Exception e) {}
                 MainActivity.this.finish();
         }
         return super.onOptionsItemSelected(item);

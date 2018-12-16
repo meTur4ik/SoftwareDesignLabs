@@ -223,6 +223,8 @@ public class EditUserProfileFragment extends Fragment {
         final ImageView avatarEditView = editUserProfileView.findViewById(R.id.avatarEditImageView);
         final ProgressDialog pd = new ProgressDialog(getContext());
         pd.setTitle("Fetcing account data...");
+        final Fragment that = this;
+        final AppUser[] user = new AppUser[1];
         if(Utility.isNetworkAvailable(getContext())) {
             pd.show();
             //String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -235,10 +237,11 @@ public class EditUserProfileFragment extends Fragment {
             query.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    AppUser user = new AppUser();
+                    AppUser usr = new AppUser();
                     for (DataSnapshot singleSnapshot : dataSnapshot.getChildren()) {
-                        user = singleSnapshot.getValue(AppUser.class);
+                        usr = singleSnapshot.getValue(AppUser.class);
                     }
+                    user[0] = usr;
 
                     EditText lastNameEditText = editUserProfileView.findViewById(R.id.lastNameEditText);
                     EditText firstNameEditText = editUserProfileView.findViewById(R.id.firstNameEditText);
@@ -246,16 +249,16 @@ public class EditUserProfileFragment extends Fragment {
                     EditText emailEditText = editUserProfileView.findViewById(R.id.emailEditText);
                     EditText rssAddressEditText = editUserProfileView.findViewById(R.id.rssAddressEditText);
 
-                    lastNameEditText.setText(user.getLast_name());
-                    firstNameEditText.setText(user.getFirst_name());
-                    phoneEditText.setText(user.getPhone_number());
-                    emailEditText.setText(user.getEmail());
-                    rssAddressEditText.setText(user.getRss_address());
+                    lastNameEditText.setText(usr.getLast_name());
+                    firstNameEditText.setText(usr.getFirst_name());
+                    phoneEditText.setText(usr.getPhone_number());
+                    emailEditText.setText(usr.getEmail());
+                    rssAddressEditText.setText(usr.getRss_address());
 
 
-                    Log.i("FIREBASE_IMAGE", user.toString());
+                    Log.i("FIREBASE_IMAGE", usr.toString());
                     GlideApp.with(getActivity())
-                            .load(user.getProfile_image())
+                            .load(usr.getProfile_image())
                             .skipMemoryCache(true)
                             .diskCacheStrategy(DiskCacheStrategy.NONE)
                             .listener(new RequestListener<Drawable>() {
@@ -267,7 +270,27 @@ public class EditUserProfileFragment extends Fragment {
 
                                 @Override
                                 public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                                    pd.dismiss();
+                                    SerializingFunctions.serializeUserFields(user[0], that);
+                                    WeakReference<Bitmap> avatar = new WeakReference<Bitmap> (((BitmapDrawable) resource).getBitmap());
+                                    new SerializingFunctions.SaveAvatar(avatar,
+                                            SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE,
+                                            new SerializingFunctions.SaveListener() {
+                                                @Override
+                                                public void onBeforeSave() {}
+
+                                                @Override
+                                                public void onAfterSave() {
+                                                    pd.dismiss();
+                                                    NavController controller = ((NavHostFragment) (getActivity()).getSupportFragmentManager()
+                                                            .findFragmentById(R.id.nav_host_fragment))
+                                                            .getNavController();
+
+                                                    controller.navigate(R.id.userProfile);
+                                                }
+
+                                                @Override
+                                                public void onError() {}
+                                            }).execute();
                                     return false;
                                 }
                             })
