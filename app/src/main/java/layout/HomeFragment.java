@@ -73,7 +73,7 @@ public class HomeFragment extends Fragment {
                     .addOnFailureListener(new RssProcessing.DownloadRSS.OnFailureListener() {
                         @Override
                         public void onFailure() {
-                            Toast.makeText(getContext(), "something is wrong with your RSS", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getContext(), "please check RSS link or Sync the account", Toast.LENGTH_LONG).show();
                         }
                     }).execute();
         }

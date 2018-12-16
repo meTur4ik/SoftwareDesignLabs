@@ -256,7 +256,7 @@ public class EditUserProfileFragment extends Fragment {
                     rssAddressEditText.setText(usr.getRss_address());
 
 
-                    Log.i("FIREBASE_IMAGE", usr.toString());
+                    //Log.i("FIREBASE_IMAGE", usr.toString());
                     GlideApp.with(getActivity())
                             .load(usr.getProfile_image())
                             .skipMemoryCache(true)
@@ -295,7 +295,6 @@ public class EditUserProfileFragment extends Fragment {
                                 }
                             })
                             .into(avatarEditView);
-                    //pd.dismiss();
                 }
 
                 @Override
