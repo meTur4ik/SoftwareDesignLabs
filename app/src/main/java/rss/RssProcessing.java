@@ -1,6 +1,7 @@
 package rss;
 
 import android.os.AsyncTask;
+import android.os.Looper;
 
 import org.jsoup.Jsoup;
 import org.w3c.dom.Document;
@@ -74,11 +75,16 @@ public abstract class RssProcessing {
     //end limiting strings
 
     public static class DownloadRSS extends AsyncTask<Void, Void, Document>{
-        public interface onDownloadedListener {
+        public interface OnDownloadedListener {
             void onPostExecute(Document rss);
         }
 
-        onDownloadedListener listener;
+        public interface OnFailureListener {
+            void onFailure();
+        }
+
+        OnDownloadedListener onDownloadedListener;
+        OnFailureListener failureListener;
         String address;
         public DownloadRSS(String address) {
             this.address = address;
@@ -86,17 +92,30 @@ public abstract class RssProcessing {
 
         @Override
         protected Document doInBackground(Void... voids) {
-            return Getdata(address);
+            try {
+                return Getdata(address);
+            } catch (Exception e) {
+
+                return null;
+            }
         }
 
         @Override
         protected void onPostExecute(Document document) {
-            listener.onPostExecute(document);
+            onDownloadedListener.onPostExecute(document);
+            if (document == null) {
+                failureListener.onFailure();
+            }
             super.onPostExecute(document);
         }
 
-        public DownloadRSS addOnDownloadListener(onDownloadedListener listener) {
-            this.listener = listener;
+        public DownloadRSS addOnDownloadListener(OnDownloadedListener listener) {
+            this.onDownloadedListener = listener;
+            return this;
+        }
+
+        public DownloadRSS addOnFailureListener(OnFailureListener listener){
+            this.failureListener = listener;
             return this;
         }
 
@@ -120,7 +139,7 @@ public abstract class RssProcessing {
                 transformer.transform(source, result);
                 return xmlDoc;
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
                 return null;
             }
         }
@@ -185,14 +204,17 @@ public abstract class RssProcessing {
                             String[] strings = ProcessHtml(current.getTextContent());
                             item.setDescription(limitString(strings[0]));
                             item.setImageUri(strings[1]);
-                            item.setLink(strings[2]);
+                            //item.setLink(strings[2]);
                         } else if (current.getNodeName().equalsIgnoreCase("image")) {
                             item.setImageUri(current.getTextContent());
                         } else if (current.getNodeName().equalsIgnoreCase("link")) {
+                            //Log.i("GOT LINK", current.getTextContent());
                             item.setLink(current.getTextContent());
                         } else if (current.getNodeName().equalsIgnoreCase("media:content")
                                 || current.getNodeName().equalsIgnoreCase("media:thumbnail")) {
                             item.setImageUri(current.getAttributes().getNamedItem("url").getNodeValue());
+                        } else if (current.getNodeName().equalsIgnoreCase("guid")){
+                            item.setLink(current.getTextContent());
                         }
                     }
                     feedItems.add(item);

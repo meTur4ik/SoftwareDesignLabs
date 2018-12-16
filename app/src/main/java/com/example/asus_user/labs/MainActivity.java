@@ -16,6 +16,10 @@ import android.widget.Toast;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -169,6 +173,7 @@ public class MainActivity extends AppCompatActivity
             case R.id.log_out_toolbar_button:
                 FirebaseAuth.getInstance().signOut();
                 startActivity(new Intent(MainActivity.this, AuthActivity.class));
+
                 MainActivity.this.finish();
         }
         return super.onOptionsItemSelected(item);

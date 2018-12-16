@@ -2,9 +2,11 @@ package rss;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +15,7 @@ import android.widget.TextView;
 
 import com.example.asus_user.labs.MainActivity;
 import com.example.asus_user.labs.R;
+import com.example.asus_user.labs.WebViewActivity;
 
 import java.util.List;
 
@@ -31,17 +34,37 @@ public class RssRecycleViewAdapter extends Adapter<RssRecycleViewAdapter.RssView
         TextView title;
         TextView description;
         ImageView image;
+        //String link;
+        View view;
+        int notePosittion;
+
         public RssViewHolder(@NonNull View itemView) {
             super(itemView);
+            notePosittion = 0;
             title = itemView.findViewById(R.id.rss_card_text_view);
             description = itemView.findViewById(R.id.rss_card_description_text_view);
             image = itemView.findViewById(R.id.rss_card_image_view);
+
+        }
+
+        public void setOnClickLink(final String link){
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
+                    Intent intent = new Intent(context, WebViewActivity.class);
+                    intent.putExtra("link", link);
+                    Log.i("GOT LINK", link);
+                    context.startActivity(intent);
                 }
             });
+        }
+
+        public int getNotePosittion() {
+            return notePosittion;
+        }
+
+        public void setNotePosittion(int notePosittion) {
+            this.notePosittion = notePosittion;
         }
     }
 
@@ -66,7 +89,10 @@ public class RssRecycleViewAdapter extends Adapter<RssRecycleViewAdapter.RssView
     public void onBindViewHolder(@NonNull RssViewHolder holder, int position) {
         RssNote note = notes.get(position);
         holder.title.setText(note.getTitle());
+        Log.i("GOT TITLE", note.getTitle());
         holder.description.setText(note.getDescription());
+        Log.i("GOT LINK", note.toString());
+        holder.setOnClickLink(note.getLink());
         if(note.getImageUri() != null) {
             GlideApp.with(holder.itemView.getContext())
                     .load(note.getImageUri())

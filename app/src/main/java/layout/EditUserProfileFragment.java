@@ -11,10 +11,12 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.navigation.NavController;
@@ -38,6 +40,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.example.asus_user.labs.MainActivity;
 import com.example.asus_user.labs.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -91,6 +98,8 @@ public class EditUserProfileFragment extends Fragment {
 
         setLoadButtonAction();
         setDoneButtonAction();
+        setSyncButton();
+
         if (hasPermissions()) {
             deserializeUser();
             deserializeAvatar();
@@ -193,9 +202,29 @@ public class EditUserProfileFragment extends Fragment {
         });
     }
 
-    private void deserializeAvatar() {
+    private void setSyncButton(){
+        Button sync = editUserProfileView.findViewById(R.id.syncButton);
+
+        sync.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (Utility.isNetworkAvailable(getContext())){
+                    try {
+                        syncUser();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
+    private void syncUser(){
         final ImageView avatarEditView = editUserProfileView.findViewById(R.id.avatarEditImageView);
-        /*if(Utility.isNetworkAvailable(getContext())) {
+        final ProgressDialog pd = new ProgressDialog(getContext());
+        pd.setTitle("Fetcing account data...");
+        if(Utility.isNetworkAvailable(getContext())) {
+            pd.show();
             //String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
             //FirebaseDatabase.getInstance().getReference().
             DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
@@ -211,24 +240,55 @@ public class EditUserProfileFragment extends Fragment {
                         user = singleSnapshot.getValue(AppUser.class);
                     }
 
+                    EditText lastNameEditText = editUserProfileView.findViewById(R.id.lastNameEditText);
+                    EditText firstNameEditText = editUserProfileView.findViewById(R.id.firstNameEditText);
+                    EditText phoneEditText = editUserProfileView.findViewById(R.id.phoneEditText);
+                    EditText emailEditText = editUserProfileView.findViewById(R.id.emailEditText);
+                    EditText rssAddressEditText = editUserProfileView.findViewById(R.id.rssAddressEditText);
+
+                    lastNameEditText.setText(user.getLast_name());
+                    firstNameEditText.setText(user.getFirst_name());
+                    phoneEditText.setText(user.getPhone_number());
+                    emailEditText.setText(user.getEmail());
+                    rssAddressEditText.setText(user.getRss_address());
+
 
                     Log.i("FIREBASE_IMAGE", user.toString());
                     GlideApp.with(getActivity())
                             .load(user.getProfile_image())
+                            .skipMemoryCache(true)
+                            .diskCacheStrategy(DiskCacheStrategy.NONE)
+                            .listener(new RequestListener<Drawable>() {
+                                @Override
+                                public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                    pd.dismiss();
+                                    return false;
+                                }
+
+                                @Override
+                                public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                    pd.dismiss();
+                                    return false;
+                                }
+                            })
                             .into(avatarEditView);
+                    //pd.dismiss();
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                    pd.dismiss();
                 }
             });
         }
-        else*/
-        {
-            SerializingFunctions.loadAvatar(avatarEditView,
-                    new File(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE));
-        }
+    }
+
+    private void deserializeAvatar() {
+        final ImageView avatarEditView = editUserProfileView.findViewById(R.id.avatarEditImageView);
+
+        SerializingFunctions.loadAvatar(avatarEditView,
+                new File(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE));
+
     }
 
     private void deserializeUser() {

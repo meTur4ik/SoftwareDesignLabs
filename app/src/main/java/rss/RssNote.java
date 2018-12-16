@@ -52,4 +52,14 @@ public class RssNote {
         this.imageUri = imageUri;
         this.link = link;
     }
+
+    @Override
+    public String toString() {
+        return "RssNote{" +
+                "title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", imageUri='" + imageUri + '\'' +
+                ", link='" + link + '\'' +
+                '}';
+    }
 }
