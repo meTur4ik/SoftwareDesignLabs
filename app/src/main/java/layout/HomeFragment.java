@@ -1,5 +1,6 @@
 package layout;
 
+import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
 
@@ -8,6 +9,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import functions.SerializingFunctions;
 import functions.Utility;
 import instances.AppUser;
@@ -34,20 +36,16 @@ public class HomeFragment extends Fragment {
 
     private View homeFragmentView;
     private RecyclerView home;
+    private AppUser user;
+    private RecyclerView.LayoutManager layoutManager;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         homeFragmentView = inflater.inflate(R.layout.fragment_home, container, false);
+        user = new AppUser(SerializingFunctions.deserializeUser());
 
-        return homeFragmentView;
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        final RecyclerView.LayoutManager layoutManager;
         int deviceOrientation = getResources().getConfiguration().orientation;
         if (deviceOrientation == Configuration.ORIENTATION_PORTRAIT) {
             layoutManager = new LinearLayoutManager(getContext());
@@ -55,25 +53,43 @@ public class HomeFragment extends Fragment {
         else {
             layoutManager = new GridLayoutManager(getContext(), 2);
         }
-        AppUser user = new AppUser(SerializingFunctions.deserializeUser());
+
+
+        setSwipeRefreshAction();
+        return homeFragmentView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+
+        loadRSS();
+    }
+
+    private void loadRSS() {
+        home = homeFragmentView.findViewById(R.id.home_recycler_view);
+        //home.setLayoutManager(new LinearLayoutManager(getContext()));
+        home.setLayoutManager(layoutManager);
+        final SwipeRefreshLayout swipeRefreshLayout = homeFragmentView.findViewById(R.id.home_swipe_refresh_layout);
+        swipeRefreshLayout.setRefreshing(true);
+        final Context ctx = getContext();
         if(Utility.isNetworkAvailable(getActivity())) {
             new RssProcessing.DownloadRSS(user.getRss_address())
                     .addOnDownloadListener(new RssProcessing.DownloadRSS.OnDownloadedListener() {
                         @Override
                         public void onPostExecute(Document rss) {
-                            home = homeFragmentView.findViewById(R.id.home_recycler_view);
-                            home.setLayoutManager(new GridLayoutManager(getContext(), 2));
-                            //home.setLayoutManager(new LinearLayoutManager(getContext()));
-                            home.setLayoutManager(layoutManager);
                             List<RssNote> rssNotes;
                             rssNotes = ProcessXml(rss);
-                            home.setAdapter(new RssRecycleViewAdapter(getActivity(), rssNotes));
+                            home.setAdapter(new RssRecycleViewAdapter(ctx, rssNotes));
+                            swipeRefreshLayout.setRefreshing(false);
                         }
                     })
                     .addOnFailureListener(new RssProcessing.DownloadRSS.OnFailureListener() {
                         @Override
                         public void onFailure() {
                             Toast.makeText(getContext(), "please check RSS link or Sync the account", Toast.LENGTH_LONG).show();
+                            swipeRefreshLayout.setRefreshing(false);
                         }
                     }).execute();
         }
@@ -84,19 +100,48 @@ public class HomeFragment extends Fragment {
             home.setLayoutManager(layoutManager);
             //home.setLayoutManager(new LinearLayoutManager(getContext()));
             home.setAdapter(new RssRecycleViewAdapter(getActivity(), rssNotes));
+            swipeRefreshLayout.setRefreshing(false);
         }
     }
 
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        //outState.putSerializable(home);
+    private void setSwipeRefreshAction(){
+        final SwipeRefreshLayout swipeRefreshLayout = homeFragmentView.findViewById(R.id.home_swipe_refresh_layout);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if(Utility.isNetworkAvailable(getActivity())) {
+                    new RssProcessing.DownloadRSS(user.getRss_address())
+                            .addOnDownloadListener(new RssProcessing.DownloadRSS.OnDownloadedListener() {
+                                @Override
+                                public void onPostExecute(Document rss) {
+                                    home = homeFragmentView.findViewById(R.id.home_recycler_view);
+                                    home.setLayoutManager(new GridLayoutManager(getContext(), 2));
+                                    //home.setLayoutManager(new LinearLayoutManager(getContext()));
+                                    home.setLayoutManager(layoutManager);
+                                    List<RssNote> rssNotes;
+                                    rssNotes = ProcessXml(rss);
+                                    home.setAdapter(new RssRecycleViewAdapter(getActivity(), rssNotes));
+                                    swipeRefreshLayout.setRefreshing(false);
+                                }
+                            })
+                            .addOnFailureListener(new RssProcessing.DownloadRSS.OnFailureListener() {
+                                @Override
+                                public void onFailure() {
+                                    Toast.makeText(getContext(), "please check RSS link or Sync the account", Toast.LENGTH_LONG).show();
+                                }
+                            }).execute();
+                }
+                else {
+                    List<RssNote> rssNotes = ProcessXml(RssProcessing.GetData());
+
+                    home = homeFragmentView.findViewById(R.id.home_recycler_view);
+                    home.setLayoutManager(layoutManager);
+                    //home.setLayoutManager(new LinearLayoutManager(getContext()));
+                    home.setAdapter(new RssRecycleViewAdapter(getActivity(), rssNotes));
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+
+            }
+        });
     }
-
-
-
-
-
-
-
 }

@@ -215,6 +215,8 @@ public abstract class RssProcessing {
                             item.setImageUri(current.getAttributes().getNamedItem("url").getNodeValue());
                         } else if (current.getNodeName().equalsIgnoreCase("guid")){
                             item.setLink(current.getTextContent());
+                        } else if (current.getNodeName().equalsIgnoreCase("pubDate")){
+                            item.setPubDate(current.getTextContent());
                         }
                     }
                     feedItems.add(item);

@@ -20,12 +20,20 @@
             android:columnCount="2"
             >
 
+            <TextView
+                android:id="@+id/rss_card_pub_date"
+                android:layout_column="0"
+                android:layout_columnSpan="2"
+                android:layout_row="0"
+                android:text="@string/ololo"
+                android:layout_gravity="end"
+                />
 
             <ImageView
                 android:id="@+id/rss_card_image_view"
                 android:layout_width="wrap_content"
                 android:layout_height="210dp"
-                android:layout_row="0"
+                android:layout_row="1"
                 android:layout_column="0"
                 android:layout_columnSpan="2"
                 android:layout_gravity="center"
@@ -37,7 +45,7 @@
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
                 android:textColor="@color/common_google_signin_btn_text_dark_focused"
-                android:layout_row="1"
+                android:layout_row="2"
                 android:layout_column="0"
                 android:text="@string/ololo" />
 
@@ -45,7 +53,7 @@
                 android:id="@+id/rss_card_description_text_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_row="2"
+                android:layout_row="3"
                 android:layout_column="0"
                 android:text="TextView" />
 

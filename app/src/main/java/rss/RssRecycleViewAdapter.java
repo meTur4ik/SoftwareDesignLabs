@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.asus_user.labs.MainActivity;
 import com.example.asus_user.labs.R;
@@ -25,17 +26,18 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.Adapter;
+import functions.Utility;
 import glide.GlideApp;
 import layout.WebPreviewFragment;
 
 public class RssRecycleViewAdapter extends Adapter<RssRecycleViewAdapter.RssViewHolder> {
     public class RssViewHolder extends RecyclerView.ViewHolder{
 
+        TextView pubDate;
         TextView title;
         TextView description;
         ImageView image;
         //String link;
-        View view;
         int notePosittion;
 
         public RssViewHolder(@NonNull View itemView) {
@@ -44,17 +46,22 @@ public class RssRecycleViewAdapter extends Adapter<RssRecycleViewAdapter.RssView
             title = itemView.findViewById(R.id.rss_card_text_view);
             description = itemView.findViewById(R.id.rss_card_description_text_view);
             image = itemView.findViewById(R.id.rss_card_image_view);
-
+            pubDate = itemView.findViewById(R.id.rss_card_pub_date);
         }
 
         public void setOnClickLink(final String link){
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(context, WebViewActivity.class);
-                    intent.putExtra("link", link);
-                    Log.i("GOT LINK", link);
-                    context.startActivity(intent);
+                    if (Utility.isNetworkAvailable(context)) {
+                        Intent intent = new Intent(context, WebViewActivity.class);
+                        intent.putExtra("link", link);
+                        Log.i("GOT LINK", link);
+                        context.startActivity(intent);
+                    }
+                    else {
+                        Toast.makeText(context, "No network connectionn available", Toast.LENGTH_LONG).show();
+                    }
                 }
             });
         }
@@ -88,10 +95,11 @@ public class RssRecycleViewAdapter extends Adapter<RssRecycleViewAdapter.RssView
     @Override
     public void onBindViewHolder(@NonNull RssViewHolder holder, int position) {
         RssNote note = notes.get(position);
+        holder.pubDate.setText(note.getPubDate());
         holder.title.setText(note.getTitle());
-        Log.i("GOT TITLE", note.getTitle());
+        //Log.i("GOT TITLE", note.getTitle());
         holder.description.setText(note.getDescription());
-        Log.i("GOT LINK", note.toString());
+        //Log.i("GOT LINK", note.toString());
         holder.setOnClickLink(note.getLink());
         if(note.getImageUri() != null) {
             GlideApp.with(holder.itemView.getContext())

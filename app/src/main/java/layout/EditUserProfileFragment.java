@@ -223,6 +223,7 @@ public class EditUserProfileFragment extends Fragment {
         final ImageView avatarEditView = editUserProfileView.findViewById(R.id.avatarEditImageView);
         final ProgressDialog pd = new ProgressDialog(getContext());
         pd.setTitle("Fetcing account data...");
+        pd.setCancelable(false);
         final Fragment that = this;
         final AppUser[] user = new AppUser[1];
         if(Utility.isNetworkAvailable(getContext())) {

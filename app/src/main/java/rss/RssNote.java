@@ -6,6 +6,15 @@ public class RssNote {
     private String description;
     private String imageUri;
     private String link;
+    private String pubDate;
+
+    public String getPubDate() {
+        return pubDate;
+    }
+
+    public void setPubDate(String pubDate) {
+        this.pubDate = pubDate;
+    }
 
     public String getLink() {
         return link;
