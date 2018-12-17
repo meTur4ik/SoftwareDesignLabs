@@ -62,8 +62,6 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-
-
         loadRSS();
     }
 
@@ -109,38 +107,7 @@ public class HomeFragment extends Fragment {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if(Utility.isNetworkAvailable(getActivity())) {
-                    new RssProcessing.DownloadRSS(user.getRss_address())
-                            .addOnDownloadListener(new RssProcessing.DownloadRSS.OnDownloadedListener() {
-                                @Override
-                                public void onPostExecute(Document rss) {
-                                    home = homeFragmentView.findViewById(R.id.home_recycler_view);
-                                    home.setLayoutManager(new GridLayoutManager(getContext(), 2));
-                                    //home.setLayoutManager(new LinearLayoutManager(getContext()));
-                                    home.setLayoutManager(layoutManager);
-                                    List<RssNote> rssNotes;
-                                    rssNotes = ProcessXml(rss);
-                                    home.setAdapter(new RssRecycleViewAdapter(getActivity(), rssNotes));
-                                    swipeRefreshLayout.setRefreshing(false);
-                                }
-                            })
-                            .addOnFailureListener(new RssProcessing.DownloadRSS.OnFailureListener() {
-                                @Override
-                                public void onFailure() {
-                                    Toast.makeText(getContext(), "please check RSS link or Sync the account", Toast.LENGTH_LONG).show();
-                                }
-                            }).execute();
-                }
-                else {
-                    List<RssNote> rssNotes = ProcessXml(RssProcessing.GetData());
-
-                    home = homeFragmentView.findViewById(R.id.home_recycler_view);
-                    home.setLayoutManager(layoutManager);
-                    //home.setLayoutManager(new LinearLayoutManager(getContext()));
-                    home.setAdapter(new RssRecycleViewAdapter(getActivity(), rssNotes));
-                    swipeRefreshLayout.setRefreshing(false);
-                }
-
+                loadRSS();
             }
         });
     }

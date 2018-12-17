@@ -18,6 +18,9 @@ import com.example.asus_user.labs.MainActivity;
 import com.example.asus_user.labs.R;
 import com.example.asus_user.labs.WebViewActivity;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -95,7 +98,11 @@ public class RssRecycleViewAdapter extends Adapter<RssRecycleViewAdapter.RssView
     @Override
     public void onBindViewHolder(@NonNull RssViewHolder holder, int position) {
         RssNote note = notes.get(position);
-        holder.pubDate.setText(note.getPubDate());
+        //String pubDate = note.getPubDate().replace(",", "");
+        DateTime dateTime = DateTime.parse(note.getPubDate(), DateTimeFormat.forPattern("E, d MMM yyyy HH:mm:ss Z"));
+        holder.pubDate.setText(dateTime.getDayOfMonth()+ "-" + dateTime.getMonthOfYear() + "-" +
+        dateTime.getYear() + ", " + dateTime.getHourOfDay() + ":" + dateTime.getMinuteOfHour() + ":" + dateTime.getSecondOfMinute());
+        //holder.pubDate.setText(note.getPubDate());
         holder.title.setText(note.getTitle());
         //Log.i("GOT TITLE", note.getTitle());
         holder.description.setText(note.getDescription());
