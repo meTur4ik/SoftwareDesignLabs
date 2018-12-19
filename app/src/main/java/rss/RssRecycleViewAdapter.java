@@ -99,10 +99,10 @@ public class RssRecycleViewAdapter extends Adapter<RssRecycleViewAdapter.RssView
     public void onBindViewHolder(@NonNull RssViewHolder holder, int position) {
         RssNote note = notes.get(position);
         //String pubDate = note.getPubDate().replace(",", "");
-        DateTime dateTime = DateTime.parse(note.getPubDate(), DateTimeFormat.forPattern("E, d MMM yyyy HH:mm:ss Z"));
+        /*DateTime dateTime = DateTime.parse(note.getPubDate(), DateTimeFormat.forPattern("E, d MMM yyyy HH:mm:ss Z"));
         holder.pubDate.setText(dateTime.getDayOfMonth()+ "-" + dateTime.getMonthOfYear() + "-" +
-        dateTime.getYear() + ", " + dateTime.getHourOfDay() + ":" + dateTime.getMinuteOfHour() + ":" + dateTime.getSecondOfMinute());
-        //holder.pubDate.setText(note.getPubDate());
+        dateTime.getYear() + ", " + dateTime.getHourOfDay() + ":" + dateTime.getMinuteOfHour() + ":" + dateTime.getSecondOfMinute());*/
+        holder.pubDate.setText(note.getPubDate());
         holder.title.setText(note.getTitle());
         //Log.i("GOT TITLE", note.getTitle());
         holder.description.setText(note.getDescription());

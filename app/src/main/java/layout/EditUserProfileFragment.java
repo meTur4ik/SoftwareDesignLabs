@@ -225,7 +225,6 @@ public class EditUserProfileFragment extends Fragment {
         pd.setTitle("Fetcing account data...");
         pd.setCancelable(false);
         final Fragment that = this;
-        final AppUser[] user = new AppUser[1];
         if(Utility.isNetworkAvailable(getContext())) {
             pd.show();
             //String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -242,7 +241,8 @@ public class EditUserProfileFragment extends Fragment {
                     for (DataSnapshot singleSnapshot : dataSnapshot.getChildren()) {
                         usr = singleSnapshot.getValue(AppUser.class);
                     }
-                    user[0] = usr;
+
+                    final AppUser user = usr;
 
                     EditText lastNameEditText = editUserProfileView.findViewById(R.id.lastNameEditText);
                     EditText firstNameEditText = editUserProfileView.findViewById(R.id.firstNameEditText);
@@ -271,7 +271,7 @@ public class EditUserProfileFragment extends Fragment {
 
                                 @Override
                                 public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                                    SerializingFunctions.serializeUserFields(user[0], that);
+                                    SerializingFunctions.serializeUserFields(user, that);
                                     WeakReference<Bitmap> avatar = new WeakReference<Bitmap> (((BitmapDrawable) resource).getBitmap());
                                     new SerializingFunctions.SaveAvatar(avatar,
                                             SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE,
@@ -339,7 +339,7 @@ public class EditUserProfileFragment extends Fragment {
         final EditText phoneEditText = editUserProfileView.findViewById(R.id.phoneEditText);
         final EditText emailEditText = editUserProfileView.findViewById(R.id.emailEditText);
         final EditText rssAddressText = editUserProfileView.findViewById(R.id.rssAddressEditText);
-        final String[] imageUri = new String[1]; //CYKA KURWA FINAL JAVA
+        final String[] imageUri = new String[1];
 
         WeakReference<Bitmap> bitmapWeakReference = new WeakReference<Bitmap>(
                 ((BitmapDrawable)avatarImageView.getDrawable()).getBitmap()

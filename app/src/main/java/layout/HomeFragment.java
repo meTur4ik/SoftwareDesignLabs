@@ -72,6 +72,7 @@ public class HomeFragment extends Fragment {
         final SwipeRefreshLayout swipeRefreshLayout = homeFragmentView.findViewById(R.id.home_swipe_refresh_layout);
         swipeRefreshLayout.setRefreshing(true);
         final Context ctx = getContext();
+        //if (ctx == null) { return; }
         if(Utility.isNetworkAvailable(getActivity())) {
             new RssProcessing.DownloadRSS(user.getRss_address())
                     .addOnDownloadListener(new RssProcessing.DownloadRSS.OnDownloadedListener() {
@@ -86,7 +87,7 @@ public class HomeFragment extends Fragment {
                     .addOnFailureListener(new RssProcessing.DownloadRSS.OnFailureListener() {
                         @Override
                         public void onFailure() {
-                            Toast.makeText(getContext(), "please check RSS link or Sync the account", Toast.LENGTH_LONG).show();
+                            Toast.makeText(ctx, "please check RSS link or Sync the account", Toast.LENGTH_LONG).show();
                             swipeRefreshLayout.setRefreshing(false);
                         }
                     }).execute();
