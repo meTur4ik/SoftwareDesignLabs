@@ -88,6 +88,9 @@ public class UserProfileFragment extends Fragment {
         });
     }
 
+    /**
+     * loacs avatar from local storage
+     */
     private void deserializeUser() {
         Properties props = SerializingFunctions.deserializeUser();
 
@@ -102,43 +105,12 @@ public class UserProfileFragment extends Fragment {
         emailTV.setText(user.getEmail());
         ImageView userAvatar = userProfileView.findViewById(R.id.avatarImageView);
         SerializingFunctions.loadAvatar(userAvatar, new File(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE));
-        /*
-        else {
-            DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
-
-            Query query = reference.child(getString(R.string.dbnode_users))
-                    .orderByKey()
-                    .equalTo(FirebaseAuth.getInstance().getCurrentUser().getUid());
-
-            query.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    for (DataSnapshot singleSnapshot : dataSnapshot.getChildren()){
-                        AppUser user = singleSnapshot.getValue(AppUser.class);
-                        lastNameTV.setText(user.getLast_name());
-                        firstNameTV.setText(user.getFirst_name());
-                        phoneTV.setText(user.getPhone_number());
-                        emailTV.setText(user.getEmail());
-
-                        ImageView userAvatar = userProfileView.findViewById(R.id.avatarImageView);
-
-                        //try from local
-                        if (!SerializingFunctions.loadAvatar(userAvatar, new File(SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE))) {
-                            GlideApp.with(getActivity())
-                                    .load(user.getProfile_image())
-                                    .into(userAvatar);
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Log.e("DatabaseError", databaseError.getMessage().toString());
-                }
-            });
-        }*/
     }
 
+    /**
+     * checks if all needed permissions granted
+     * @return true if yes else false
+     */
     private boolean hasPermissions(){
         int result = 0;
         String[] permissions = new String[] {Manifest.permission.READ_EXTERNAL_STORAGE};
@@ -153,6 +125,9 @@ public class UserProfileFragment extends Fragment {
         return true;
     }
 
+    /**
+     * shows storage permission explanation
+     */
     private void showNoReadExternalStoragePermissionSnackbar(){
         Snackbar.make(getActivity().findViewById(R.id.drawer_layout),
                 "read and write external storage permission isn't granted", Snackbar.LENGTH_LONG).setAction(
@@ -169,6 +144,9 @@ public class UserProfileFragment extends Fragment {
                 .show();
     }
 
+    /**
+     * opens system settings for this application
+     */
     private void openApplicationSettings(){
         Intent appSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                 Uri.parse("package:" + getActivity().getPackageName()));

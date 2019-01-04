@@ -26,7 +26,7 @@ import androidx.navigation.NavOptions;
  * be sure that you set android:label for each of your
  * navigation items
  */
-public class MyNavigationUISetup {
+public abstract class MyNavigationUISetup {
     public static void setupWithNavController(@NonNull final NavigationView navigationView, @NonNull final NavController navController) {
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -41,11 +41,6 @@ public class MyNavigationUISetup {
                 else {
                     Toast.makeText(navigationView.getContext(), "ain't allowed to do this now", Toast.LENGTH_LONG).show();
                 }
-
-                /*try {
-                    ((MainActivity) navigationView.getContext()).getSupportFragmentManager().beginTransaction().
-                            remove(((MainActivity) navigationView.getContext()).getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment)).commit();
-                } catch (Exception e) {}*/
 
                 return handled;
             }
@@ -123,9 +118,5 @@ public class MyNavigationUISetup {
             view = new View(activity);
         }
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-    }
-
-    public static void ShowIfDataCouldBeLost(NavController navController){
-
     }
 }

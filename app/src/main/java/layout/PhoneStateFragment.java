@@ -47,6 +47,9 @@ public class PhoneStateFragment extends Fragment {
         }
     }
 
+    /**
+     * gets imei and app version
+     */
     private void showPhoneState(){
         TelephonyManager tm = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
         String imei = "";

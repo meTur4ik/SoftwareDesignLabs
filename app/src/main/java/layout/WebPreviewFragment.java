@@ -34,7 +34,7 @@ public class WebPreviewFragment extends Fragment {
         webPreviewFragment = inflater.inflate(R.layout.fragment_web_preview, container, false);
         String myValue = this.getArguments().getString("message");
         WebView webView = webPreviewFragment.findViewById(R.id.rssWebView);
-        // включаем поддержку JavaScript
+        // enabling JavaScript
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient() {
             @SuppressWarnings("deprecation")
@@ -48,7 +48,7 @@ public class WebPreviewFragment extends Fragment {
                 onReceivedError(view, rerr.getErrorCode(), rerr.getDescription().toString(), req.getUrl().toString());
             }
         });
-        // указываем страницу загрузки
+        // setting page address
         webView.loadUrl(myValue);
         return webPreviewFragment;
     }

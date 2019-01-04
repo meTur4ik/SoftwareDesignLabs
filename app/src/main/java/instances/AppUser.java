@@ -10,11 +10,12 @@ import static instances.UserConstants.PHONE_STR;
 import static instances.UserConstants.PROFILE_IMAGE_STR;
 import static instances.UserConstants.RSS_ADDRESS_STR;
 
+/**
+ * just user. can be passed to Firebase constructor.
+ * also can be constructed from properties (see the constants)
+ */
 public class AppUser {
-
-
     // properties
-
     private String first_name = "";
     private String last_name = "";
     private String phone_number = "";

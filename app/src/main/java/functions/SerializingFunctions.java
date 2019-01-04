@@ -47,16 +47,12 @@ import static instances.UserConstants.SERIALIZING_DIRECTORY;
 import static instances.UserConstants.USER_SETTINGS_FILE;
 
 public abstract class SerializingFunctions {
-    /*private static final String SERIALIZING_DIRECTORY = UserProfileFragmen.SERIALIZING_DIRECTORY;
-    private static final String USER_SETTINGS_FILE = UserProfileFragment.USER_SETTINGS_FILE;
-    private static final String USER_AVATAR_FILE = UserProfileFragment.USER_AVATAR_FILE;*/
 
-    public interface SaveListener {
-        void onBeforeSave();
-        void onAfterSave();
-        void onError();
-    }
 
+
+    /**
+     * performs set up of predefined directory
+     */
     public static void setWorkingDirectory(){
         final File wd = new File(SERIALIZING_DIRECTORY);
         if (!wd.exists()) {
@@ -64,6 +60,10 @@ public abstract class SerializingFunctions {
         }
     }
 
+    /**
+     * gets user data from predefined local file
+     * @return user as Properties
+     */
     public static Properties deserializeUser() {
         Properties props = new Properties();
         InputStream inputFile = null;
@@ -85,7 +85,15 @@ public abstract class SerializingFunctions {
         return props;
     }
 
+    /**
+     * saves image to file in background
+     */
     public static class SaveAvatar extends AsyncTask<Void, Void, Boolean>{
+        public interface SaveListener {
+            void onBeforeSave();
+            void onAfterSave();
+            void onError();
+        }
 
         private WeakReference<Bitmap> bitmapWeakReference;
         private final String path;
@@ -124,7 +132,11 @@ public abstract class SerializingFunctions {
         }
     }
 
-    public static class UploadImageBackground extends AsyncTask<Void, Void, byte[]>{
+    /**
+     * Task that compresses given image to byte[]. Has on pre execute and post execute
+     * listeners. use on post execute to work with compressed byte[]
+     */
+    public static class CompressImageBackground extends AsyncTask<Void, Void, byte[]>{
 
         public interface UploadListener{
             void onPreExecute();
@@ -133,7 +145,7 @@ public abstract class SerializingFunctions {
         WeakReference<Bitmap> picture;
         UploadListener uploadListener;
 
-        public UploadImageBackground(Bitmap picture, UploadListener uploadListener) {
+        public CompressImageBackground(Bitmap picture, UploadListener uploadListener) {
             this.picture = new WeakReference<Bitmap>(picture);
             this.uploadListener = uploadListener;
         }
@@ -160,6 +172,12 @@ public abstract class SerializingFunctions {
         }
     }
 
+    /**
+     * Loads Image to targetView from targetFile
+     * @param targetView
+     * @param targetFile
+     * @return false if file does not exist and true if file exists
+     */
     public static boolean loadAvatar(ImageView targetView, File targetFile){
         if(!targetFile.exists()) {
             return false;
@@ -174,11 +192,12 @@ public abstract class SerializingFunctions {
         return true;
     }
 
+    /**
+     * Serializes user to both Firebase and local file
+     * @param user
+     * @param fr
+     */
     public static void serializeUserFields(final AppUser user, final Fragment fr){
-        /*if (!Utility.isNetworkAvailable(getContext())){
-            Toast.makeText(getActivity(), "no network connection", Toast.LENGTH_LONG).show();
-            return;
-        }*/
         if (!Utility.isNetworkAvailable(fr.getContext())){
 
         }

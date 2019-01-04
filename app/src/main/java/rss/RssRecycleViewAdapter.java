@@ -33,6 +33,9 @@ import functions.Utility;
 import glide.GlideApp;
 import layout.WebPreviewFragment;
 
+/**
+ * Adapter for home page. uses RssNote as list item
+ */
 public class RssRecycleViewAdapter extends Adapter<RssRecycleViewAdapter.RssViewHolder> {
     public class RssViewHolder extends RecyclerView.ViewHolder{
 
@@ -40,7 +43,6 @@ public class RssRecycleViewAdapter extends Adapter<RssRecycleViewAdapter.RssView
         TextView title;
         TextView description;
         ImageView image;
-        //String link;
         int notePosittion;
 
         public RssViewHolder(@NonNull View itemView) {
@@ -59,7 +61,6 @@ public class RssRecycleViewAdapter extends Adapter<RssRecycleViewAdapter.RssView
                     if (Utility.isNetworkAvailable(context)) {
                         Intent intent = new Intent(context, WebViewActivity.class);
                         intent.putExtra("link", link);
-                        Log.i("GOT LINK", link);
                         context.startActivity(intent);
                     }
                     else {
@@ -98,23 +99,15 @@ public class RssRecycleViewAdapter extends Adapter<RssRecycleViewAdapter.RssView
     @Override
     public void onBindViewHolder(@NonNull RssViewHolder holder, int position) {
         RssNote note = notes.get(position);
-        //String pubDate = note.getPubDate().replace(",", "");
-        /*DateTime dateTime = DateTime.parse(note.getPubDate(), DateTimeFormat.forPattern("E, d MMM yyyy HH:mm:ss Z"));
-        holder.pubDate.setText(dateTime.getDayOfMonth()+ "-" + dateTime.getMonthOfYear() + "-" +
-        dateTime.getYear() + ", " + dateTime.getHourOfDay() + ":" + dateTime.getMinuteOfHour() + ":" + dateTime.getSecondOfMinute());*/
         holder.pubDate.setText(note.getPubDate());
         holder.title.setText(note.getTitle());
-        //Log.i("GOT TITLE", note.getTitle());
         holder.description.setText(note.getDescription());
-        //Log.i("GOT LINK", note.toString());
         holder.setOnClickLink(note.getLink());
         if(note.getImageUri() != null) {
             GlideApp.with(holder.itemView.getContext())
                     .load(note.getImageUri())
                     .into(holder.image);
         }
-
-        //holder.image.setImageResource(R.drawable.noimage);
     }
 
     @Override

@@ -65,6 +65,9 @@ public class HomeFragment extends Fragment {
         loadRSS();
     }
 
+    /**
+     * loads and parses rss to cards
+     */
     private void loadRSS() {
         home = homeFragmentView.findViewById(R.id.home_recycler_view);
         //home.setLayoutManager(new LinearLayoutManager(getContext()));

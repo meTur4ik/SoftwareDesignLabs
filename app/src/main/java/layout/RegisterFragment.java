@@ -52,6 +52,9 @@ public class RegisterFragment extends Fragment {
         return registerView;
     }
 
+    /**
+     * registers user in FirebaseAuth and FirebaseDatabase
+     */
     private void registerNewUser() {
         EditText emailET = registerView.findViewById(R.id.auth_register_email_editText);
         EditText passwordET = registerView.findViewById(R.id.auth_register_password_editText);

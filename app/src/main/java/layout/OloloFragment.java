@@ -12,6 +12,9 @@ import android.view.ViewGroup;
 
 import com.example.asus_user.labs.R;
 
+/**
+ * dummy fragment
+ */
 public class OloloFragment extends Fragment {
 
     public OloloFragment() {

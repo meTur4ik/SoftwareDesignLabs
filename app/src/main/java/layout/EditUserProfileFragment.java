@@ -6,7 +6,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
@@ -45,17 +44,11 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
-import com.example.asus_user.labs.MainActivity;
 import com.example.asus_user.labs.R;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -67,9 +60,6 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -149,6 +139,11 @@ public class EditUserProfileFragment extends Fragment {
         });
     }
 
+    /**
+     * gather intents that can choose image and pass it via data section
+     * @param context
+     * @return gathered intent
+     */
     public static Intent getPickImageIntent(Context context) {
         Intent chooserIntent = null;
 
@@ -219,6 +214,10 @@ public class EditUserProfileFragment extends Fragment {
         });
     }
 
+    /**
+     * downloads all info about user from Firebase and saves it to file. also outputs it to
+     * fragment
+     */
     private void syncUser(){
         final ImageView avatarEditView = editUserProfileView.findViewById(R.id.avatarEditImageView);
         final ProgressDialog pd = new ProgressDialog(getContext());
@@ -275,7 +274,7 @@ public class EditUserProfileFragment extends Fragment {
                                     WeakReference<Bitmap> avatar = new WeakReference<Bitmap> (((BitmapDrawable) resource).getBitmap());
                                     new SerializingFunctions.SaveAvatar(avatar,
                                             SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE,
-                                            new SerializingFunctions.SaveListener() {
+                                            new SerializingFunctions.SaveAvatar.SaveListener() {
                                                 @Override
                                                 public void onBeforeSave() {}
 
@@ -306,6 +305,9 @@ public class EditUserProfileFragment extends Fragment {
         }
     }
 
+    /**
+     * loads avatar from local storage
+     */
     private void deserializeAvatar() {
         final ImageView avatarEditView = editUserProfileView.findViewById(R.id.avatarEditImageView);
 
@@ -314,6 +316,9 @@ public class EditUserProfileFragment extends Fragment {
 
     }
 
+    /**
+     * loads user from local storage
+     */
     private void deserializeUser() {
         Properties props = SerializingFunctions.deserializeUser();
         AppUser user = new AppUser(props);
@@ -330,6 +335,9 @@ public class EditUserProfileFragment extends Fragment {
         rssAddressEditText.setText(user.getRss_address());
     }
 
+    /**
+     * saves user to local storage and Firebase
+     */
     private void serializeUser() {
 
         ImageView avatarImageView = editUserProfileView.findViewById(R.id.avatarEditImageView);
@@ -368,7 +376,7 @@ public class EditUserProfileFragment extends Fragment {
             final Fragment that = this;
 
             new SerializingFunctions.SaveAvatar(bitmapWeakReference,
-                    SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE, new SerializingFunctions.SaveListener() {
+                    SERIALIZING_DIRECTORY + "/" + USER_AVATAR_FILE, new SerializingFunctions.SaveAvatar.SaveListener() {
                 @Override
                 public void onBeforeSave() {
                     pd.show();
@@ -385,7 +393,7 @@ public class EditUserProfileFragment extends Fragment {
             }).execute();
 
             Bitmap bitmap = ((BitmapDrawable) avatarImageView.getDrawable()).getBitmap();
-            new SerializingFunctions.UploadImageBackground(bitmap, new SerializingFunctions.UploadImageBackground.UploadListener() {
+            new SerializingFunctions.CompressImageBackground(bitmap, new SerializingFunctions.CompressImageBackground.UploadListener() {
                 @Override
                 public void onPreExecute() {
                     pd.show();
@@ -440,23 +448,6 @@ public class EditUserProfileFragment extends Fragment {
             }).execute();
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // USER DATA
-
-
-
         NavController controller = ((NavHostFragment) getActivity().getSupportFragmentManager()
                 .findFragmentById(R.id.nav_host_fragment))
                 .getNavController();
@@ -464,6 +455,9 @@ public class EditUserProfileFragment extends Fragment {
         controller.navigate(R.id.userProfile);
     }
 
+    /**
+     * storage permission explanation explanation
+     */
     private void showNoReadExternalStoragePermissionSnackbar(){
         Snackbar.make(getActivity().findViewById(R.id.drawer_layout),
                 "read and write external storage permission isn't granted", Snackbar.LENGTH_LONG).setAction(
@@ -480,12 +474,19 @@ public class EditUserProfileFragment extends Fragment {
                 .show();
     }
 
+    /**
+     * runs intent of system settings for this application
+     */
     private void openApplicationSettings(){
         Intent appSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                 Uri.parse("package:" + getActivity().getPackageName()));
         startActivityForResult(appSettingsIntent, PERMISSION_REQUEST_CODE);
     }
 
+    /**
+     * checks if there are all needed permissions
+     * @return true if all permissions granted false if not.
+     */
     private boolean hasPermissions(){
         int result = 0;
         String[] permissions = new String[] {Manifest.permission.READ_EXTERNAL_STORAGE};
